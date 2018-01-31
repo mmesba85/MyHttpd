@@ -1,0 +1,5 @@
+These are the steps for the myHttpd project:
+    - CORE FEATURES:
+        - Server configuration      [TODO]
+        - ThreadPool                [TODO]
+        - Server Connection         [TODO]
