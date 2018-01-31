@@ -1,0 +1,3 @@
+This is the readme for myHttpd project from Epita.
+The project purpose is to build an http server with support of some http
+protocol features. It is written in C++.
