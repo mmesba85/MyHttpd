@@ -24,14 +24,14 @@ class ThreadPool
     public:
         ThreadPool(unsigned nb_max_threads = DEFAULT_MAX_THREADS, bool start_now
                 = true);
-        void add_task(std::function<void ()>&);
+        void add_task(const std::function<void ()>);
         void remove_all_tasks();
         void destroy();
         void start();
-
+        void sync();
     private:
-        std::shared_ptr<std::recursive_mutex> mutex_;
-        std::shared_ptr<std::condition_variable_any> cv_;
+        std::recursive_mutex mutex_;
+        std::condition_variable_any cv_;
         std::queue<std::function<void ()>> tasks_;
         std::vector<std::shared_ptr<Executor>> threads_;
 
