@@ -25,7 +25,7 @@ void Executor::run()
     while (state == State::RUNNING)
     {
         std::unique_lock<std::recursive_mutex> lock(*mutex_);
-        cv_->wait(lock, &Executor::need_to_run);
+        while (!need_to_run()) cv_->wait(lock);
         std::function<void ()> f = queue_.front();
         queue_.pop();
         lock.unlock();
