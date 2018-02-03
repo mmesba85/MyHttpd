@@ -27,3 +27,8 @@ void Executor::run()
 
     }
 }
+
+void Executor::stop()
+{
+    state = State::STOPPED;
+}
