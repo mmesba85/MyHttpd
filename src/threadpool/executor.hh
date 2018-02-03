@@ -23,15 +23,14 @@ class Executor
                  std::queue<std::function<void()>>& queue);
         void start();
         void stop();
-        bool is_waiting();
+        bool is_waiting() const;
     private:
         void run();
-        bool need_to_run();
+        bool need_to_run() const;
 
         std::condition_variable_any& cv_;
         std::recursive_mutex& mutex_;
         std::queue<std::function<void ()>>& queue_;
-        std::thread my_thread_;
-
         enum State state;
+        std::thread my_thread_;
 };

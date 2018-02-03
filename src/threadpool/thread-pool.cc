@@ -21,6 +21,7 @@ void ThreadPool::start()
 
     for (auto& executor : threads_)
         executor->start();
+    cv_.notify_all();
 }
 
 void ThreadPool::add_task(const std::function<void ()> function)
