@@ -13,21 +13,23 @@ class Executor
     {
         RUNNING,
         STOPPED,
-        INITED
+        INITED,
+        WAITING
     };
 
     public:
-        Executor(const std::shared_ptr<std::recursive_mutex>& mutex,
-                 const std::shared_ptr<std::condition_variable_any>& cv,
+        Executor(std::recursive_mutex& mutex,
+                 std::condition_variable_any& cv,
                  std::queue<std::function<void()>>& queue);
         void start();
         void stop();
+        bool is_waiting();
     private:
         void run();
         bool need_to_run();
 
-        const std::shared_ptr<std::condition_variable_any> cv_;
-        const std::shared_ptr<std::recursive_mutex> mutex_;
+        std::condition_variable_any& cv_;
+        std::recursive_mutex& mutex_;
         std::queue<std::function<void ()>>& queue_;
         std::thread my_thread_;
 
