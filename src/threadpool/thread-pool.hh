@@ -24,7 +24,7 @@ class ThreadPool
     public:
         ThreadPool(unsigned nb_max_threads = DEFAULT_MAX_THREADS, bool start_now
                 = true);
-        void add_task(std::function<void ()>);
+        void add_task(std::function<void ()>&);
         void remove_all_tasks();
         void destroy();
         void start();
