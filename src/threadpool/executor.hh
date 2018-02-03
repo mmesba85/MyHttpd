@@ -15,6 +15,7 @@ class Executor
         STOPPED,
         INITED
     };
+
     public:
         Executor(const std::shared_ptr<std::recursive_mutex>& mutex,
                  const std::shared_ptr<std::condition_variable>& cv,
