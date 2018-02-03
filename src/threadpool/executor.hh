@@ -18,15 +18,15 @@ class Executor
 
     public:
         Executor(const std::shared_ptr<std::recursive_mutex>& mutex,
-                 const std::shared_ptr<std::condition_variable>& cv,
+                 const std::shared_ptr<std::condition_variable_any>& cv,
                  std::queue<std::function<void()>>& queue);
         void start();
         void stop();
     private:
         void run();
-        bool need_to_wait();
+        bool need_to_run();
 
-        const std::shared_ptr<std::condition_variable> cv_;
+        const std::shared_ptr<std::condition_variable_any> cv_;
         const std::shared_ptr<std::recursive_mutex> mutex_;
         std::queue<std::function<void ()>>& queue_;
         std::thread my_thread_;
