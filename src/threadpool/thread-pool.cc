@@ -1,7 +1,5 @@
 #include "thread-pool.hh"
 
-#include <iostream>
-
 ThreadPool::ThreadPool(unsigned nb_max_threads, bool start_now)
 {
     if (nb_max_threads == 0)

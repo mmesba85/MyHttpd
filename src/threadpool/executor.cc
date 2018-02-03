@@ -1,5 +1,4 @@
 #include "executor.hh"
-#include <iostream>
 
 Executor::Executor(std::recursive_mutex& mutex,
         std::condition_variable_any& cv,
@@ -27,11 +26,8 @@ void Executor::run()
     {
         mutex_.lock();
         try{
-            while (!need_to_run() && state != State::STOPPED){
-
-                std::cout << "is WAITING" << std::endl;
+            while (!need_to_run() && state != State::STOPPED)
                 cv_.wait(mutex_);
-            }
             if (state == State::STOPPED)
             {
                 mutex_.unlock();
