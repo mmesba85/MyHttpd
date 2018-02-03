@@ -2,7 +2,7 @@
 
 #include <mutex>
 #include <condition_variable>
-#include <list>
+#include <queue>
 #include <vector>
 #include <functional>
 #include <memory>
@@ -14,6 +14,13 @@
 
 class ThreadPool
 {
+    enum class State
+    {
+        STARTED,
+        STOPPED,
+        INITED
+    };
+
     public:
         ThreadPool(unsigned nb_max_threads = DEFAULT_MAX_THREADS, bool start_now
                 = true);
@@ -25,6 +32,8 @@ class ThreadPool
     private:
         std::recursive_mutex mutex_;
         std::condition_variable cv_;
-        std::list<std::function<void ()>> tasks_;
+        std::queue<std::function<void ()>> tasks_;
         std::vector<std::shared_ptr<Executor>> threads_;
+
+        enum State state;
 };
