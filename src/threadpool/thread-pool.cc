@@ -21,3 +21,10 @@ void ThreadPool::start()
     for (auto& executor : threads_)
         executor->start();
 }
+
+void ThreadPool::add_task(std::function<void ()>& function)
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    tasks_.push(function);
+    cv_.notify_one();
+}
