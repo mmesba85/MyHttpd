@@ -20,7 +20,12 @@ ServerConfig::~ServerConfig()
 {
 }
 
-std::string ServerConfig::get_port()
+std::string ServerConfig::get_port() const
 {
 	return port_;
+}
+
+std::string ServerConfig::get_ip() const
+{
+	return ip_;
 }
