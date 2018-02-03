@@ -31,7 +31,7 @@ class ThreadPool
 
     private:
         std::recursive_mutex mutex_;
-        std::condition_variable cv_;
+        std::condition_variable_any cv_;
         std::queue<std::function<void ()>> tasks_;
         std::vector<std::shared_ptr<Executor>> threads_;
 
