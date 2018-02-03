@@ -28,3 +28,10 @@ void ThreadPool::add_task(std::function<void ()>& function)
     tasks_.push(function);
     cv_.notify_one();
 }
+
+void ThreadPool::remove_all_tasks()
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    while (!tasks_.size())
+        tasks_.pop();
+}
