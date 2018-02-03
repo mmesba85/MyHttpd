@@ -1,5 +1,4 @@
-#ifndef SERVERCONNEXION_HXX
-#define SERVERCONNEXION_HXX
+#pragma once
 
 #include <sys/epoll.h>
 #include <sys/types.h>
@@ -10,28 +9,47 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <exception>
-#include "server_connexion.hh"
+#include <system_error>
+#include <cerrno>
+#include "server_connection.hh"
 
 ServerConnection::ServerConnection()
 {
   server_ = ServerConfig("test", "4343", "127.0.0.1", "/tmp");
   int sock = socket(AF_INET, SOCK_STREAM, 0);
-  struct sockaddr_in sin;
+
   if(sock < 0)
-    throw std::invalid_argument("error socket creation");
+  {
+    std::error_code ec(errno, std::generic_category());
+    throw std::system_error(ec, "error socket creation.");  
+  }
+
+  struct sockaddr_in sin;
   sin.sin_family = AF_INET;
   std::string::size_type sz;
   int port = std::stoi(server_.get_port(), &sz);
   sin.sin_port = htons(port);
-  sin.sin_addr.s_addr = inet_addr("127.0.0.1");
+  const char* ip = server_.get_ip().c_str();
+  sin.sin_addr.s_addr = inet_addr(ip);
+ 
   if(bind(sock, (struct sockaddr *)&sin, sizeof sin) == -1)
   {
-    perror("bind");
-    throw std::invalid_argument("error bind");
+    std::error_code ec(errno, std::generic_category());
+    throw std::system_error(ec, "bind failed.");
   }
+
   if(fcntl(sock, F_SETFL, O_NONBLOCK) < 0)
-    throw std::invalid_argument("error non_blocking");
+  {
+    std::error_code ec(errno, std::generic_category());
+    throw std::system_error(ec, "fcntl failed.");
+  }  
+
   socket_ = sock;
+}
+
+ServerConnection::~ServerConnection()
+{
+  close(socket_);
 }
 
 bool ServerConnection::set_connection(struct epoll_event& event, 
@@ -40,14 +58,33 @@ bool ServerConnection::set_connection(struct epoll_event& event,
   struct sockaddr in_addr;
   socklen_t len = sizeof(in_addr);
   int fd = accept(socket_, &in_addr, &len);
+
   if(fd == -1)
-    return false;
+  {
+    if(errno == EAGAIN || errno == EWOULDBLOCK)
+    {
+      std::error_code ec(errno, std::generic_category());
+      throw std::system_error(ec, "No connections are present to be accepted.");    
+    }
+    else
+      return false;
+  }
+  
   if(fcntl(fd, F_SETFL, O_NONBLOCK) < 0)
-    throw std::invalid_argument("error non_blocking");
+  {
+    std::error_code ec(errno, std::generic_category());
+    throw std::system_error(ec, "fcntl failed.");
+  }
+
   event.data.fd = fd;
   event.events = EPOLLIN | EPOLLET;
+  
   if(epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event) == -1)
-    return false;
+  {
+    std::error_code ec(errno, std::generic_category());
+    throw std::system_error(ec, "epoll_ctl failed.");
+  }
+  
   return true;
 }
 
@@ -55,4 +92,8 @@ int ServerConnection::get_socket() const
 {
   return socket_;
 }
-#endif /* SERVERCONNEXION_HXX */
+
+ThreadPool& ServerConnection::get_pool()
+{
+  return th_pool_;
+}
