@@ -11,6 +11,7 @@
 #include <exception>
 #include <system_error>
 #include <cerrno>
+#include <string>
 #include "server_connection.hh"
 
 ServerConnection::ServerConnection()
@@ -31,7 +32,15 @@ ServerConnection::ServerConnection()
   sin.sin_port = htons(port);
   const char* ip = server_.get_ip().c_str();
   sin.sin_addr.s_addr = inet_addr(ip);
- 
+  
+  int reuse = 1;
+  if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (
+    const char*)&reuse, sizeof(reuse)) < 0)
+  {
+    std::error_code ec(errno, std::generic_category());
+    throw std::system_error(ec, "setsockopt(SO_REUSEPORT) failed.");
+  }
+
   if(bind(sock, (struct sockaddr *)&sin, sizeof sin) == -1)
   {
     std::error_code ec(errno, std::generic_category());
@@ -63,11 +72,13 @@ bool ServerConnection::set_connection(struct epoll_event& event,
   {
     if(errno == EAGAIN || errno == EWOULDBLOCK)
     {
+      return false;
+    }
+    else
+    {
       std::error_code ec(errno, std::generic_category());
       throw std::system_error(ec, "No connections are present to be accepted.");    
     }
-    else
-      return false;
   }
   
   if(fcntl(fd, F_SETFL, O_NONBLOCK) < 0)
