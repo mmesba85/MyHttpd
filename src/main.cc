@@ -2,21 +2,47 @@
 
 constexpr int max_listen = 1000;
 constexpr int max_events = 1000;
+constexpr int max_request_len = 255;
 
-void communicate(int fd)
+/**
+** call the appropriate method
+** according to the type of the request
+*/
+void process_request(std::string request, int fd)
 {
-    std::cout << "hello " << '\n';
+  std::cout << request << " " << fd;
 }
 
 
-int main()
+/**
+** main communication method
+** read the data
+** call process_request to process the data
+*/
+void communicate(int fd)
 {
-  ServerConnection s;
+  char buf[max_request_len];
+  auto res = read(fd, buf, max_request_len);
+  if (res == -1)
+  {
+    std::error_code ec(errno, std::generic_category());
+    throw std::system_error(ec, "read data from descriptor failed."); 
+  }
+  process_request(buf, fd);
+}
 
-	if(listen(s.get_socket(), max_listen) < 0)
-		return -1;
+/* main server connection loop
+  ** accept tcp connection
+  ** create a thread each time there is data to read
+  ** the thread call the communication method that will process
+  ** the request
+  */
+int main_loop(ServerConnection& s)
+{
+  if(listen(s.get_socket(), max_listen) < 0)
+    return -1;
 
-	int epollfd = epoll_create1(0);
+  int epollfd = epoll_create1(0);
   if (epollfd == -1)
   {
     std::error_code ec(errno, std::generic_category());
@@ -46,6 +72,7 @@ int main()
           events[i].events & EPOLLHUP ||
           !(events[i].events & EPOLLIN)) 
       {
+        std::cout << "ici" << '\n';
         std::error_code ec(errno, std::generic_category());
         throw std::system_error(ec, "event error.");
         close(events[i].data.fd);
@@ -67,5 +94,15 @@ int main()
       }
     }
   }
+  return 0;
+}
+
+int main()
+{
+  
+  ServerConnection s;
+  int loop = main_loop(s);
+  if(loop != 0)
+    return loop;
 	return 0;
 }
