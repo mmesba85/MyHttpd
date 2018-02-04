@@ -153,15 +153,14 @@ void Configuration::fill_configuration()
   // {}
 }
 
-// void Configuration::print()
-// {
-//   std::cout << "dry_run = " << dry_run_ << '\n';
-//   std::cout << "log_file = " << log_file_ << '\n';
-//   std::cout << std::endl;
-//   for (auto it=list_server_.begin(); it!=list_server_.end(); ++it)
-//   {
-//     it->print();
-//     std::cout << std::endl;
-//   }
-//
-// }
+void Configuration::print()
+{
+  std::cout << "dry_run = " << dry_run_ << '\n';
+  std::cout << "log_file = " << log_file_ << '\n';
+  std::cout << std::endl;
+  for (auto it=list_server_.begin(); it!=list_server_.end(); ++it)
+  {
+    it->print();
+    std::cout << std::endl;
+  }
+}
