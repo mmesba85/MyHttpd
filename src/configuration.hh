@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ifstream>
+#include <fstream>
 
 #include "server_config.hh"
 #include "toml/toml.hpp"
@@ -17,6 +17,7 @@ public:
   Configuration(const std::string filename);
   ~Configuration();
   void fill_configuration();
+  void print();
 };
 
 #include "configuration.hxx"
