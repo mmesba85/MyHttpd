@@ -3,7 +3,7 @@
 #include <ifstream>
 
 #include "server_config.hh"
-#include "toml.hpp"
+#include "toml/toml.hpp"
 
 class Configuration
 {
@@ -14,8 +14,8 @@ private:
   std::ifstream stream_;
 
 public:
-  Configuration (const std::string filename);
-  virtual ~Configuration ();
+  Configuration(const std::string filename);
+  ~Configuration();
   void fill_configuration();
 };
 
