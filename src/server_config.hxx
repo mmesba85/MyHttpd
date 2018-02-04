@@ -60,19 +60,19 @@ void ServerConfig::insert_to_error(std::string& a, std::string& b)
   error_.insert(std::pair<std::string, std::string>(a, b));
 }
 
-// void ServerConfig::print()
-// {
-//   std::cout << "server_name = " << server_name_ << '\n';
-//   std::cout << "ip = " << ip_ << '\n';
-//   std::cout << "port = " << port_ << '\n';
-//   std::cout << "root_dir = " << root_dir_ << '\n';
-//   for (auto it=configurations_.begin(); it!=configurations_.end(); ++it)
-//   {
-//     std::cout << it->first << " =  " <<it->second << '\n';
-//   }
-//   std::cout << "error : " << '\n';
-//   for (auto it=error_.begin(); it!=error_.end(); ++it)
-//   {
-//     std::cout << it->first << ", " <<it->second << '\n';
-//   }
-// }
+void ServerConfig::print()
+{
+  std::cout << "server_name = " << server_name_ << '\n';
+  std::cout << "ip = " << ip_ << '\n';
+  std::cout << "port = " << port_ << '\n';
+  std::cout << "root_dir = " << root_dir_ << '\n';
+  for (auto it=configurations_.begin(); it!=configurations_.end(); ++it)
+  {
+    std::cout << it->first << " =  " <<it->second << '\n';
+  }
+  std::cout << "error : " << '\n';
+  for (auto it=error_.begin(); it!=error_.end(); ++it)
+  {
+    std::cout << it->first << ", " <<it->second << '\n';
+  }
+}
