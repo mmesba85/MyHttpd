@@ -30,7 +30,7 @@ std::string ServerConfig::get_ip() const
 	return ip_;
 }
 
-void ServerConfig::insert_to_configuration(std::string& a, std::string& b)
+void ServerConfig::insert_to_configuration(std::string a, std::string& b)
 {
   configurations_.insert(std::pair<std::string, std::string>(a, b));
 }
@@ -45,9 +45,9 @@ void ServerConfig::set_port(std::string& port)
   port_ = port;
 }
 
-void ServerConfig::set_ip(std::string& ip)
+void ServerConfig::set_ip(std::string& s)
 {
-  ip_ = ip;
+  ip_ = s;
 }
 
 void ServerConfig::set_root_dir(std::string& root_dir)
@@ -55,7 +55,24 @@ void ServerConfig::set_root_dir(std::string& root_dir)
   root_dir_ = root_dir;
 }
 
-void insert_to_error(std::string& a, std::string& b);
+void ServerConfig::insert_to_error(std::string& a, std::string& b)
 {
   error_.insert(std::pair<std::string, std::string>(a, b));
 }
+
+// void ServerConfig::print()
+// {
+//   std::cout << "server_name = " << server_name_ << '\n';
+//   std::cout << "ip = " << ip_ << '\n';
+//   std::cout << "port = " << port_ << '\n';
+//   std::cout << "root_dir = " << root_dir_ << '\n';
+//   for (auto it=configurations_.begin(); it!=configurations_.end(); ++it)
+//   {
+//     std::cout << it->first << " =  " <<it->second << '\n';
+//   }
+//   std::cout << "error : " << '\n';
+//   for (auto it=error_.begin(); it!=error_.end(); ++it)
+//   {
+//     std::cout << it->first << ", " <<it->second << '\n';
+//   }
+// }
