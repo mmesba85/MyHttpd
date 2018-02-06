@@ -140,17 +140,23 @@ void Configuration::fill_configuration()
     catch(const std::exception& e)
     {}
 
+    try
+    {
+      if (it->find("error") != it->end())
+        std::cout << "TOTO" << std::endl;
+      auto error = toml::get<toml::Array<toml::Array<toml::String>>>(it->at("error"));
+      std::cout << "COUCOU" << std::endl;
+      std::cout << "COUCOU" << std::endl;
+      for (auto iu = error.begin(); iu != error.end(); ++iu)
+        one.insert_to_error(iu->at(0), iu->at(1));
+    }
+    catch(const std::exception& e)
+    {
+      std::cout << e.what() << std::endl;
+    }
+
     list_server_.push_back(one);
   }
-
-  // try
-  // {
-  //   auto error = toml::get<std::vector<std::string>>(data.at("error"));
-  //   for (auto iu = error.begin(); iu != error.end(); ++iu)
-  //     one.insert_to_error(iu->at(0), iu->at(1));
-  // }
-  // catch(const std::exception& e)
-  // {}
 }
 
 void Configuration::print()
