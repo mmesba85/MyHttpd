@@ -22,6 +22,7 @@ void process_request(std::string request, int fd)
 void communicate(int fd)
 {
   char buf[max_request_len];
+  std::cout << "read" << std::endl;
   auto res = read(fd, buf, max_request_len);
   if (res == -1)
   {
@@ -88,9 +89,12 @@ int main_loop(ServerConnection& s)
       else 
       {
         auto dscr = events[i].data.fd;
-        s.get_pool().add_task(std::bind(communicate, dscr));
-        s.get_pool().start();
-        s.get_pool().destroy();
+        char buff[512];
+        read(dscr, buff, 512);
+        std::cout << buff << '\n';
+        /*s.get_pool().add_task(std::bind(communicate, dscr));
+        s.get_pool().start();*/
+        //s.get_pool().destroy();
       }
     }
   }
