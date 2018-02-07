@@ -32,7 +32,7 @@ public:
   void set_ip(std::string& ip);
   void set_root_dir(std::string& root_dir);
   void insert_to_error(std::string& a, std::string& b);
-
+  void insert_to_configuration(std::string a, std::string& b);
   /* Print this server configuration */
   void print();
 };
