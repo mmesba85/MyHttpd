@@ -108,3 +108,8 @@ ThreadPool& ServerConnection::get_pool()
 {
   return th_pool_;
 }
+
+ServerConfig& ServerConnection::get_config()
+{
+  return server_;
+}
