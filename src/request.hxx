@@ -2,10 +2,41 @@
 
 #include "request.hh"
 
-Request::Request(std::string url, int version, std::string host, 
-  bool connected)
-  : url_(url), version_(version), host_(host), connected_(connected)
-  {}
+std::string& Request::get_version()
+{
+  return version_;
+}
+
+// not done
+bool Request::bad_method() const
+{
+  return true;
+}
+
+// not done
+bool Request::forbidden(ServerConfig& config) const
+{
+  config = config;
+  return true;
+}
+
+// not done
+bool Request::not_found(ServerConfig& config) const
+{
+  config = config;
+  return true;
+}
+
+std::string get_method(std::string request)
+{
+  std::istringstream f(request);
+  std::string s;    
+  getline(f, s);
+  std::istringstream g(s);
+  std::string res;
+  getline(g, res, ' ');
+  return res;
+} 
 
 bool check_request_line(std::string line)
 {
@@ -27,7 +58,7 @@ bool check_request_line(std::string line)
   return true;
 }
 
-/* check the request */
+/* check the request (syntax) */
 bool check_request(std::string request)
 {
   if(request.empty())
