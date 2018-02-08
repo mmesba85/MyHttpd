@@ -1,9 +1,13 @@
 #pragma once
 
 #include "request.hh"
+#include "response.hh"
 
-class GETRequest : public Request 
+class GETRequest: public Request 
 {
   public:
-    GETReques();
+    GETRequest(std::string request);
+    std::string process_request(Response& rp, ServerConfig& config);
 };
+
+#include "get_request.hxx"
