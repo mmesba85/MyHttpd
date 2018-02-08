@@ -4,40 +4,51 @@
 #include <iostream>
 #include "server_connection.hh"
 #include "request.hh"
+#include "response.hh"
+#include "get_request.hh"
 
 constexpr int max_listen = 1000;
 constexpr int max_events = 1000;
 constexpr int max_request_len = 255;
 
 /**
-** call the appropriate method
-** according to the type of the request
-*/
-void process_request(std::string request, int fd)
-{
-  bool is_valid = check_request(request);
-  
-  std::cout << "is valid : " << is_valid << std::endl;
-  std::cout << fd;
-}
-
-
-/**
 ** main communication method
 ** read the data
-** call process_request to process the data
+** check if the syntax is valid, otherwise send 400 error
+** if valid, check for the method then call the process_request
+** that would do all the other checks and return the right
+** response
 */
-void communicate(int fd)
+void communicate(int fd, ServerConfig config)
 {
   char buf[max_request_len];
-  std::cout << "read" << std::endl;
   auto res = read(fd, buf, max_request_len);
   if (res == -1)
   {
     std::error_code ec(errno, std::generic_category());
     throw std::system_error(ec, "read data from descriptor failed."); 
   }
-  process_request(buf, fd);
+  bool is_valid = check_request(buf);
+  std::string response;
+  Response rp;
+  if(!is_valid) //syntax error
+  {
+    rp.set_code("400");
+    rp.set_version("HTTP/1.1");
+    response = rp.build_response();
+  }
+  else
+  {
+    std::string method = get_method(buf);
+    if(method.compare("GET") == 0)
+    {
+      GETRequest rq(buf);
+      rp.set_version(rq.get_version());
+      response = rq.process_request(rp, config);
+    }  
+  }
+  std::cout << "is valid : " << is_valid << std::endl;
+  std::cout << fd;
 }
 
 /* main server connection loop
@@ -97,7 +108,7 @@ int main_loop(ServerConnection& s)
       else 
       {
         auto dscr = events[i].data.fd;
-        s.get_pool().add_task(std::bind(communicate, dscr));
+        s.get_pool().add_task(std::bind(communicate, dscr, s.get_config()));
         s.get_pool().start();
         //s.get_pool().destroy();
       }
