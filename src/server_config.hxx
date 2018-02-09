@@ -1,5 +1,3 @@
-#pragma once
-
 #include "server_config.hh"
 
 ServerConfig::ServerConfig()

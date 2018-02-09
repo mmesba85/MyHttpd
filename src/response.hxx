@@ -1,6 +1,5 @@
-#pragma once
-
 #include "response.hh"
+#include "request.hh"
 
 Response::Response()
 {
@@ -11,7 +10,7 @@ Response::Response()
 
 std::string Response::build_response(Request& request)
 {
-  request = request;
+    request = request;
   std::string res("");
   return res;
 }

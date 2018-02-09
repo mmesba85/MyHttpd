@@ -1,5 +1,3 @@
-#pragma once
-
 #include "request.hh"
 
 std::string& Request::get_version()
@@ -16,8 +14,8 @@ bool Request::bad_method() const
 // not done
 bool Request::forbidden(ServerConfig& config) const
 {
-  config = config;
-  return true;
+    config  = config;
+    return true;
 }
 
 // not done

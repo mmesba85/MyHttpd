@@ -1,5 +1,3 @@
-#pragma once
-
 #include "configuration.hh"
 #include <map>
 #include <array>

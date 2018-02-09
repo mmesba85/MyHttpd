@@ -1,7 +1,8 @@
 #pragma once
 
-#include "request.hh"
+#include <string>
 
+class Request;
 class Response
 {
   public:

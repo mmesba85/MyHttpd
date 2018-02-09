@@ -1,8 +1,5 @@
-#pragma once
-
 #include "get_request.hh"
 #include "response.hh" 
-#include "request.hh"
 
 GETRequest::GETRequest(std::string request)
 {
