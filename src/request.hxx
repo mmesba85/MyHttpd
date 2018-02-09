@@ -5,7 +5,7 @@ std::string& Request::get_version()
   return version_;
 }
 
-// not done
+/* a voir */
 bool Request::bad_method() const
 {
   return true;
@@ -46,13 +46,7 @@ bool check_request_line(std::string line)
 
   if(strings.size() != 3)
     return false;
-  if(strings[0].compare("GET") != 0 && 
-    strings[0].compare("POST") != 0)
-    return false;
-  
-  if(strings[2].compare("HTTP/1.1") != 0 &&
-     strings[2].compare("HTTP/1.0") != 0)
-    return false;  
+
   return true;
 }
 
@@ -61,11 +55,11 @@ bool check_request(std::string request)
 {
   if(request.empty())
     return false;
+
   std::istringstream f(request);
   std::string s;    
   getline(f, s);
 
-  std::cout << "first line : " << s << std::endl;
   if(s.at(s.length()-1) != '\r')
     return false;
 
@@ -117,5 +111,7 @@ bool check_request(std::string request)
         strings[1].compare("keep-alive") != 0)
       return false;
   }
+  if(is_end == 0)
+    return false;
   return true;
 }
