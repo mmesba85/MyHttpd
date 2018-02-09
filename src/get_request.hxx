@@ -42,21 +42,17 @@ GETRequest::GETRequest(std::string request)
 
 std::string GETRequest::process_request(Response& rp, ServerConfig& config)
 {
-  if(bad_method())
-  {
-    rp.set_code("405");
-  }
-  else if(forbidden(config))
-  {
+  if(forbidden(config))
     rp.set_code("403");
-  }
   else if(not_found(config))
-  {
     rp.set_code("404");
-  }
+  else if(bad_method())
+    rp.set_code("405");
+  else if(version_.compare("HTTP/1.1") != 0 && version_.compare("HTTP/1.0") != 0)
+    rp.set_code("505");
+  else if(version_.compare("HTTP/1.1") == 0 && host_ == "")
+    rp.set_code("400");
   else
-  {
     rp.set_code("200");
-  }
   return rp.build_response(*this);
 }
