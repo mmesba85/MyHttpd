@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ctime>
+#include <time.h>
 #include "response.hh"
 
 Response::Response()
@@ -7,6 +9,17 @@ Response::Response()
   version_ = "";
   status_code_ = "";
   reason_phrase_ = "";
+}
+
+std::string get_date()
+{
+  time_t rawtime;
+  struct tm* ptm;
+  time(&rawtime);
+  ptm = gmtime(&rawtime);
+  char buffer[80];
+  strftime(buffer, 80, "%a, %d %b %Y %T", ptm);
+  return buffer;
 }
 
 std::string Response::build_response(Request& request)
@@ -18,7 +31,9 @@ std::string Response::build_response(Request& request)
    
 std::string Response::build_response()
 {
-  std::string res("");
+  std::string res;
+  res = version_ + " " + status_code_ + " " + reason_phrase_ + "\r\n";
+  res += "Date: " + get_date() + " GMT" + "\r\n" + "\r\n"; 
   return res;
 }
 
