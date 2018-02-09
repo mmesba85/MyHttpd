@@ -22,10 +22,17 @@ std::string get_date()
   return buffer;
 }
 
+size_t get_file_len(std::string file)
+{
+  return 0;
+}
+
 std::string Response::build_response(Request& request)
 {
-  request = request;
-  std::string res("");
+  std::string res;
+  res = version_ + " " + status_code_ + " " + reason_phrase_ + "\r\n";
+  res += "Date: " + get_date() + " GMT" + "\r\n";
+  res += "Content-Length: " + get_file_len(request.url) + "\r\n\r\n";
   return res;
 }
    
