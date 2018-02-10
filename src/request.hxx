@@ -5,6 +5,11 @@ std::string& Request::get_version()
   return version_;
 }
 
+std::string& Request::get_url()
+{
+  return url_;
+}
+
 /* a voir */
 bool Request::bad_method() const
 {
