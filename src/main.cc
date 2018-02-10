@@ -2,6 +2,7 @@
 #include <sstream>
 #include <vector>
 #include <iostream>
+#include <signal.h>
 #include "server_connection.hh"
 #include "request.hh"
 #include "response.hh"
@@ -10,6 +11,7 @@
 constexpr int max_listen = 1000;
 constexpr int max_events = 1000;
 constexpr int max_request_len = 255;
+bool loop_handler = true;
 
 /**
 ** main communication method
@@ -83,7 +85,7 @@ int main_loop(ServerConnection& s)
 
   std::array<struct epoll_event, max_events> events;
 
-  while (true)
+  while (loop_handler)
   {
     auto n = epoll_wait(epollfd, events.data(), max_events, -1);
     for (int i = 0; i < n; ++i)
@@ -110,16 +112,21 @@ int main_loop(ServerConnection& s)
         auto dscr = events[i].data.fd;
         s.get_pool().add_task(std::bind(communicate, dscr, s.get_config()));
         s.get_pool().start();
-        //s.get_pool().destroy();
       }
     }
   }
   return 0;
 }
 
+void end(int sig)
+{
+  std::cout << "end "<<  sig << '\n';
+  loop_handler = false;
+}
+
 int main()
 {
-  
+  signal(SIGINT, &end);
   ServerConnection s;
   int loop = main_loop(s);
   if(loop != 0)
