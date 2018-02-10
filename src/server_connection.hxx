@@ -57,6 +57,7 @@ ServerConnection::ServerConnection()
 ServerConnection::~ServerConnection()
 {
   close(socket_);
+  th_pool_.destroy();
 }
 
 bool ServerConnection::set_connection(struct epoll_event& event, 
