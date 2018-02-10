@@ -21,10 +21,10 @@ std::string get_date()
   return buffer;
 }
 
-size_t get_file_len(std::string file)
+std::string get_file_len(std::string file)
 {
     file = file;
-  return 0;
+  return "";
 }
 
 std::string Response::build_response(Request& request)
@@ -32,7 +32,7 @@ std::string Response::build_response(Request& request)
   std::string res;
   res = version_ + " " + status_code_ + " " + reason_phrase_ + "\r\n";
   res += "Date: " + get_date() + " GMT" + "\r\n";
-  res += "Content-Length: " + get_file_len(request.url) + "\r\n\r\n";
+  res += "Content-Length: " + get_file_len(request.get_url()) + "\r\n\r\n";
   return res;
 }
    
