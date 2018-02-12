@@ -24,8 +24,7 @@ class Request
     ** parameters
     ** \return the string correspondint to the resource
     */
-    std::optional<std::string> extract_resource_name(
-            const ServerConfig& ) const;
+    std::string extract_resource_name(const ServerConfig& ) const;
     
     std::string& get_version();
     static bool check_request_line(std::string& line);
