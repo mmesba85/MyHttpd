@@ -1,21 +1,31 @@
 #pragma once
 
+#include <optional>
+
 #include "server_config.hh"
 
 class Response;
+
 class Request
 {
   public:
     bool bad_method() const;
+
+    /**
+    ** \brief tell if the acces to the resource is forbidden
+    ** \param the server configuration where searching the resource
+    ** \return true if forbidden, false otherwise
+    */
     bool forbidden(ServerConfig& config) const;
     bool not_found(ServerConfig& config) const;
 
     /**
-     * \brief extract the string corresponding to the requested resource with no
-     * parameters
-     * \param file the string in which the resource is placed
-     */
-    void extract_resource(std::string& file);
+    ** \brief extract the string corresponding to the requested resource with no
+    ** parameters
+    ** \return the string correspondint to the resource
+    */
+    std::optional<std::string> extract_resource_name(
+            const ServerConfig& ) const;
     
     std::string& get_version();
     std::string& get_url();
@@ -23,6 +33,9 @@ class Request
     static bool check_client_request(std::string request);
     static std::string get_method(std::string& request);
     virtual std::string process_request(Response& rp, ServerConfig& config) = 0;
+
+    //for  tests purposes
+    void init(std::string&& url, std::string&& version, std::string&& host, bool connected);
   protected:
     std::string url_;
     std::string version_;

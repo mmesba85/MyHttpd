@@ -28,6 +28,11 @@ std::string ServerConfig::get_ip() const
 	return ip_;
 }
 
+std::string ServerConfig::get_name() const
+{
+    return server_name_;
+}
+
 void ServerConfig::insert_to_configuration(std::string a, std::string& b)
 {
   configurations_.insert(std::pair<std::string, std::string>(a, b));

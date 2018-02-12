@@ -1,5 +1,7 @@
 #include "request.hh"
 
+#include <regex>
+
 std::string& Request::get_version()
 {
   return version_;
@@ -16,7 +18,32 @@ bool Request::bad_method() const
   return true;
 }
 
-// not done
+std::optional<std::string> Request::extract_resource_name(
+        const ServerConfig& config)const
+{
+    std::string pattern("");
+    constexpr unsigned max_iteration = 2;
+    const std::string hosts[max_iteration] = {config.get_ip(), host_};
+
+    for (unsigned i = 0; i < max_iteration; ++i)
+    {
+        pattern.clear();
+        pattern.append("http://");
+        pattern.append(hosts[i]);
+        pattern.append(":");
+        pattern.append(config.get_port());
+        pattern.append("(/[a-zA-Z0-9-_=\\.#]+)");
+        pattern.append("&[a-zA-Z0-9-_=\\./\\+#]*");
+        
+        std::smatch result;
+        std::regex regex(pattern);
+        if (std::regex_match(url_, result, regex))
+            return result[1];
+    }
+
+    return std::nullopt;
+}
+
 bool Request::forbidden(ServerConfig& config) const
 {
     config  = config;
@@ -119,4 +146,12 @@ bool check_request(std::string request)
   if(is_end == 0)
     return false;
   return true;
+}
+
+void Request::init(std::string&& url, std::string&& version, std::string&& host, bool connected)
+{
+    url_ = url;
+    version_ = version;
+    host_ = host;
+    connected_ = connected;
 }
