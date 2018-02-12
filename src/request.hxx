@@ -37,7 +37,10 @@ std::string Request::extract_resource_path(
         std::regex regex(pattern);
         if (std::regex_match(url_, result, regex))
         {
-            return std::string(result[2]);
+            std::string path = result[2];
+            if (path.at(path.size() - 1) == '/')
+                path.append("index.html");
+            return path;
         }
     }
 
@@ -46,15 +49,24 @@ std::string Request::extract_resource_path(
 
 bool Request::forbidden(ServerConfig& config) const
 {
-    config = config;
-    return true;
+    std::string path = extract_resource_path(config);
+    std::ifstream file(config.get_root_dir() + path);
+    file.get();
+    bool res = file.bad();
+    file.close();
+    return res;
 }
 
-// not done
 bool Request::not_found(ServerConfig& config) const
 {
-  config = config;
-  return true;
+  std::string path = extract_resource_path(config);
+  if (path.empty())
+      return false;
+
+  std::ifstream file(config.get_root_dir() + path);
+  bool res = !file;
+  file.close();
+  return res;
 }
 
 std::string get_method(std::string request)
