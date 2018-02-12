@@ -33,6 +33,11 @@ std::string ServerConfig::get_name() const
     return server_name_;
 }
 
+std::string ServerConfig::get_root_dir() const
+{
+    return this->root_dir_;
+}
+
 void ServerConfig::insert_to_configuration(std::string a, std::string& b)
 {
   configurations_.insert(std::pair<std::string, std::string>(a, b));
