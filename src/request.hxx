@@ -13,35 +13,40 @@ bool Request::bad_method() const
   return true;
 }
 
-std::optional<std::string> Request::extract_resource_name(
+std::string Request::extract_resource_path(
         const ServerConfig& config)const
 {
     std::string pattern("");
     constexpr unsigned max_iteration = 2;
-    const std::string hosts[max_iteration] = {config.get_ip(), host_};
-
-    for (unsigned i = 0; i < max_iteration; ++i)
+    const std::string hosts[max_iteration] = {host_, config.get_ip()};
+    for (unsigned i = 0; i < max_iteration; ++i) // to test with 2 names
     {
+        // build the pattern
         pattern.clear();
-        pattern.append("http://");
-        pattern.append(hosts[i]);
-        pattern.append(":");
+        pattern.append("http://"); // scheme
+        pattern.append(hosts[i]); // host
+        //the optional port
+        pattern.append("(:");
         pattern.append(config.get_port());
-        pattern.append("(/[a-zA-Z0-9-_=\\.#]+)");
-        pattern.append("&[a-zA-Z0-9-_=\\./\\+#]*");
+        pattern.append(")?");
+        // TODO: verify if the regex below actually handle all cases
+        pattern.append("((/[a-zA-Z0-9-_=\\.#&])+)"); // the resource path.
+        pattern.append("?([a-zA-Z0-9-_=\\./\\+#]&)*"); // the query
         
         std::smatch result;
         std::regex regex(pattern);
         if (std::regex_match(url_, result, regex))
-            return result[1];
+        {
+            return std::string(result[2]);
+        }
     }
 
-    return std::nullopt;
+    return "";
 }
 
 bool Request::forbidden(ServerConfig& config) const
 {
-    config  = config;
+    config = config;
     return true;
 }
 
