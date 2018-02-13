@@ -16,13 +16,13 @@ class Request
     ** \param the server configuration where searching the resource
     ** \return true if forbidden, false otherwise
     */
-    bool forbidden(ServerConfig& config) const;
+    bool forbidden(const ServerConfig& config) const;
     /**
     ** \brief check if resource requested exists
     ** \brief the server configuration to search the resource
     ** \return true if not founded, false otherwise
     */
-    bool not_found(ServerConfig& config) const;
+    bool not_found(const ServerConfig& config) const;
 
     /**
     ** \brief extract the string corresponding to the requested resource with no
@@ -36,7 +36,7 @@ class Request
     static bool check_request_line(std::string& line);
     static bool check_client_request(std::string request);
     static std::string get_method(std::string& request);
-    virtual std::string process_request(Response& rp, ServerConfig& config) = 0;
+    virtual std::string process_request(Response& rp, const ServerConfig& config) = 0;
 
     //for  tests purposes
     void init(std::string&& url, std::string&& version, std::string&& host, bool connected);

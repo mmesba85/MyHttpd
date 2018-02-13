@@ -52,9 +52,10 @@ std::string Request::extract_resource_path(
     return "";
 }
 
-bool Request::forbidden(ServerConfig& config) const
+bool Request::forbidden(const ServerConfig& config) const
 {
     std::string path = extract_resource_path(config);
+    std::cout << "path: " << path << std::endl;
     std::ifstream file(config.get_root_dir() + path);
     file.get();
     bool res = file.bad();
@@ -62,7 +63,7 @@ bool Request::forbidden(ServerConfig& config) const
     return res;
 }
 
-bool Request::not_found(ServerConfig& config) const
+bool Request::not_found(const ServerConfig& config) const
 {
   std::string path = extract_resource_path(config);
   if (path.empty())
