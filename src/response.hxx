@@ -1,13 +1,18 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
 #include <time.h>
+#include <fcntl.h>
+
 #include "response.hh"
 #include "request.hh"
 
-Response::Response()
+Response::Response(const std::string& version)
 {
-  version_ = "";
+  version_ = version;
   status_code_ = "";
   reason_phrase_ = "";
 }
@@ -74,10 +79,41 @@ void Response::set_code(const std::string& code)
     
 void Response::set_version(const std::string& version)
 {
-	version_ = version;
+  version_ = version;
 }
 
 std::string& Response::get_code()
 {
   return status_code_;
+}
+
+int Response::send_data(Request& rq, ServerConfig& config, int fd)
+{
+  std::string response = rq.process_request(*this, config);
+  std::string file_name = rq.extract_resource_path(config);
+  size_t response_len = response.length();
+  int res = send(fd, response.c_str(), response_len, 0);
+  if(!res)
+  {
+    std::error_code ec(errno, std::generic_category());
+    throw std::system_error(ec, "Fail send.");
+  }
+  if(file_name != "")
+  {
+    int file_fd = open(file_name.c_str(), O_RDONLY);
+    struct stat stat_buf;
+    fstat(file_fd, &stat_buf);
+    off_t offset = 0;
+    res = sendfile(fd, file_fd, &offset, stat_buf.st_size);
+    if(!res)
+    {
+      close(file_fd);
+      std::error_code ec(errno, std::generic_category());
+      throw std::system_error(ec, "Fail sendfile.");
+    }
+    close(file_fd);
+  }
+  if(!rq.is_connected())
+    close(fd);
+  return 0;
 }

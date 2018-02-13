@@ -7,6 +7,7 @@ GETRequest::GETRequest(std::string request)
   std::istringstream f(request);
   std::string s;    
   getline(f, s);
+  s.erase(s.length()-1);
   std::istringstream g(s);
   std::string aux;
   while(getline(g, aux, ' '))
@@ -20,6 +21,9 @@ GETRequest::GETRequest(std::string request)
     connected_ = false;
   while(getline(f, s))
   {
+    if(s.compare("\r") == 0)
+      continue;
+    s.erase(s.length()-1);
     std::vector<std::string> strings;
     std::istringstream g(s);
     std::string aux;

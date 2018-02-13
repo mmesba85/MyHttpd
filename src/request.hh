@@ -33,6 +33,7 @@ class Request
     
     std::string& get_version();
     std::string& get_url();
+    bool is_connected();
     static bool check_request_line(std::string& line);
     static bool check_client_request(std::string request);
     static std::string get_method(std::string& request);

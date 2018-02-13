@@ -12,6 +12,11 @@ std::string& Request::get_url()
   return url_;
 }
 
+bool Request::is_connected()
+{
+  return connected_;
+}
+
 /* a voir */
 bool Request::bad_method() const
 {

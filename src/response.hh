@@ -7,10 +7,12 @@ class Response
 {
   public:
     Response();
+    Response(const std::string& version);
     std::string build_response(Request& request, const ServerConfig& conf);
     std::string build_response();
     void set_code(const std::string& code);
     void set_version(const std::string& version);
+    int send_data(Request& request, ServerConfig& config, int fd);
     std::string& get_code();
   private:
     std::string version_;
