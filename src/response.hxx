@@ -1,4 +1,6 @@
 #include <ctime>
+#include <fstream>
+#include <iostream>
 #include <time.h>
 #include "response.hh"
 #include "request.hh"
@@ -21,27 +23,35 @@ std::string get_date()
   return buffer;
 }
 
-std::string get_file_len(std::string file)
+int get_file_len(Request& request, const ServerConfig& conf)
 {
-    file = file;
-  return "";
+  std::string file_name = request.extract_resource_path(conf);
+  std::ifstream file(file_name, std::ifstream::binary | std::ifstream::in);
+  file.seekg(0, std::ios::end);
+  int size = file.tellg();
+  file.close();
+  return size;
 }
 
-std::string Response::build_response(Request& request)
+std::string Response::build_response(Request& request, const ServerConfig& conf)
 {
   std::string res;
-  res = version_ + " " + status_code_ + " " + reason_phrase_ + "\r\n";
-  res += "Date: " + get_date() + " GMT" + "\r\n";
-  res += "Content-Length: " + get_file_len(request.get_url()) + "\r\n\r\n";
-  return res;
+  std::stringstream ss;
+  ss << version_ << " " << status_code_ << " " << reason_phrase_ << "\r\n";
+  ss << "Date: " << get_date() << " GMT" << "\r\n" << "\r\n"; 
+  std::cout << "response: " << ss.str() << std::endl;
+  ss << "Content-Length: " << get_file_len(request, conf) << "\r\n\r\n";
+  return ss.str();
 }
    
 std::string Response::build_response()
 {
   std::string res;
-  res = version_ + " " + status_code_ + " " + reason_phrase_ + "\r\n";
-  res += "Date: " + get_date() + " GMT" + "\r\n" + "\r\n"; 
-  return res;
+  std::stringstream ss;
+  ss << version_ << " " << status_code_ << " " << reason_phrase_ << "\r\n";
+  ss << "Date: " << get_date() << " GMT" << "\r\n" << "\r\n"; 
+  std::cout << "response: " << ss.str() << std::endl;
+  return ss.str();
 }
 
 
@@ -65,4 +75,9 @@ void Response::set_code(const std::string& code)
 void Response::set_version(const std::string& version)
 {
 	version_ = version;
+}
+
+std::string& Response::get_code()
+{
+  return status_code_;
 }
