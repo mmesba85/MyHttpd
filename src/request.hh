@@ -1,6 +1,6 @@
 #pragma once
 
-#include <optional>
+#include <fstream>
 
 #include "server_config.hh"
 
@@ -17,6 +17,11 @@ class Request
     ** \return true if forbidden, false otherwise
     */
     bool forbidden(ServerConfig& config) const;
+    /**
+    ** \brief check if resource requested exists
+    ** \brief the server configuration to search the resource
+    ** \return true if not founded, false otherwise
+    */
     bool not_found(ServerConfig& config) const;
 
     /**
@@ -24,8 +29,7 @@ class Request
     ** parameters
     ** \return the string correspondint to the resource
     */
-    std::optional<std::string> extract_resource_name(
-            const ServerConfig& ) const;
+    std::string extract_resource_path(const ServerConfig& ) const;
     
     std::string& get_version();
     std::string& get_url();

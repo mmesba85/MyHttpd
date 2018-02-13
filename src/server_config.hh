@@ -28,6 +28,7 @@ public:
    std::string get_port() const;
    std::string get_ip() const;
    std::string get_name() const;
+   std::string get_root_dir() const;
   void set_server_name(std::string& server_name);
   void set_port(std::string& port);
   void set_ip(std::string& ip);
