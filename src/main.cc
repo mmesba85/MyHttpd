@@ -2,6 +2,10 @@
 #include <sstream>
 #include <vector>
 #include <iostream>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/sendfile.h>
+#include <unistd.h>
 #include <signal.h>
 #include "server_connection.hh"
 #include "request.hh"
@@ -38,6 +42,9 @@ void communicate(int fd, ServerConfig config)
     rp.set_code("400");
     rp.set_version("HTTP/1.1");
     response = rp.build_response();
+    size_t response_len = response.length();
+    std::cout << "response: " << response << std::endl;
+    send(fd, response.c_str(), response_len, 0);
   }
   else
   {
@@ -45,9 +52,17 @@ void communicate(int fd, ServerConfig config)
     if(method.compare("GET") == 0)
     {
       GETRequest rq(buf);
-      rp.set_version(rq.get_version());
+      rp.set_version("HTTP/1.1");
       response = rq.process_request(rp, config);
-    }  
+      std::string file_name = rq.extract_resource_path(config);
+      int file_fd = open(file_name.c_str(), O_RDONLY);
+      struct stat stat_buf;
+      fstat(file_fd, &stat_buf);
+      size_t response_len = response.length();
+      send(fd, response.c_str(), response_len, 0);
+      off_t offset = 0;
+      sendfile(fd, file_fd, &offset, stat_buf.st_size);
+    } 
   }
   std::cout << "is valid : " << is_valid << std::endl;
   std::cout << fd;
