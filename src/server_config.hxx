@@ -68,6 +68,11 @@ void ServerConfig::insert_to_error(std::string& a, std::string& b)
   error_.insert(std::pair<std::string, std::string>(a, b));
 }
 
+void ServerConfig::insert_to_proxy_pass(std::string& a, std::string& b)
+{
+  proxy_pass_.insert(std::pair<std::string, std::string>(a, b));
+}
+
 void ServerConfig::print()
 {
   std::cout << "server_name = " << server_name_ << '\n';
