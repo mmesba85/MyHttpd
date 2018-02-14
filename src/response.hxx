@@ -28,9 +28,9 @@ std::string get_date()
   return buffer;
 }
 
-int get_file_len(Request& request, const ServerConfig& conf)
+int get_file_len(Request& request)
 {
-  std::string file_name = request.extract_resource_path(conf);
+  std::string file_name = request.extract_resource_path();
   std::ifstream file(file_name, std::ifstream::binary | std::ifstream::in);
   file.seekg(0, std::ios::end);
   int size = file.tellg();
@@ -38,14 +38,14 @@ int get_file_len(Request& request, const ServerConfig& conf)
   return size;
 }
 
-std::string Response::build_response(Request& request, const ServerConfig& conf)
+std::string Response::build_response(Request& request)
 {
   std::string res;
   std::stringstream ss;
   ss << version_ << " " << status_code_ << " " << reason_phrase_ << "\r\n";
   ss << "Date: " << get_date() << " GMT" << "\r\n" << "\r\n"; 
   std::cout << "response: " << ss.str() << std::endl;
-  ss << "Content-Length: " << get_file_len(request, conf) << "\r\n\r\n";
+  ss << "Content-Length: " << get_file_len(request) << "\r\n\r\n";
   return ss.str();
 }
    
@@ -90,7 +90,7 @@ std::string& Response::get_code()
 int Response::send_data(Request& rq, ServerConfig& config, int fd)
 {
   std::string response = rq.process_request(*this, config);
-  std::string file_name = rq.extract_resource_path(config);
+  std::string file_name = rq.extract_resource_path();
   size_t response_len = response.length();
   int res = send(fd, response.c_str(), response_len, 0);
   if(!res)

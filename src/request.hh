@@ -29,7 +29,7 @@ class Request
     ** parameters
     ** \return the string correspondint to the resource
     */
-    std::string extract_resource_path(const ServerConfig& ) const;
+    std::string extract_resource_path() const;
     
     std::string& get_version();
     std::string& get_url();

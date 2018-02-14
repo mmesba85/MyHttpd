@@ -56,7 +56,7 @@ std::string GETRequest::process_request(Response& rp, const ServerConfig& config
   else
   {
     rp.set_code("200");
-    return rp.build_response(*this, config);
+    return rp.build_response(*this);
   }
   return rp.build_response();
 }

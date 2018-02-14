@@ -14,7 +14,7 @@
 
 ServerConnection::ServerConnection()
 {
-  server_ = ServerConfig("test", "4343", "127.0.0.1", "./tests");
+  server_ = ServerConfig("tests", "4343", "127.0.0.1", "./tests");
   int sock = socket(AF_INET, SOCK_STREAM, 0);
 
   if(sock < 0)
