@@ -38,7 +38,7 @@ std::string ServerConfig::get_root_dir() const
   return this->root_dir_;
 }
 
-std::map<std::string, std::string> get_error() const
+std::map<std::string, std::string> ServerConfig::get_error() const
 {
   return this->error_;
 }
@@ -94,12 +94,12 @@ void ServerConfig::print()
     std::cout << it->first << ", " <<it->second << '\n';
   }
 }
-// 
+
 // bool ServerConfig::is_cgi(Request::Request request)
 // {
 //   std::string url = request.get_url();
 //   if (request.get_method() == "GET")
 //   {
-//     std::string token = s.substr(0, s.find(delimiter));
+//     std::string token = s.substr(1, s.find("$"));
 //   }
 // }
