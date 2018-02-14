@@ -3,3 +3,4 @@ These are the steps for the myHttpd project:
         - Server configuration      [TODO]
         - ThreadPool                [TODO]
         - Server Connection         [TODO]
+        - CGI                       [TODO]
