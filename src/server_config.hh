@@ -16,6 +16,7 @@ private:
 
   std::map<std::string, std::string> configurations_;
   std::map<std::string, std::string> error_;
+  std::map<std::string, std::string> proxy_pass_;
 
 public:
   /* Constructors */
@@ -35,8 +36,11 @@ public:
   void set_root_dir(std::string& root_dir);
   void insert_to_error(std::string& a, std::string& b);
   void insert_to_configuration(std::string a, std::string& b);
+  void insert_to_proxy_pass(std::string& a, std::string& b);
   /* Print this server configuration */
   void print();
+
+
 };
 
 #include "server_config.hxx"
