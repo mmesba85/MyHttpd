@@ -20,10 +20,10 @@ bool Request::is_connected()
 /* a voir */
 bool Request::bad_method() const
 {
-    return true;
+    return false;
 }
 
-std::string Request::extract_resource_path() const
+std::string Request::extract_resource_path(const ServerConfig& config) const
 {
     std::string pattern("");
     // build the pattern
@@ -34,7 +34,8 @@ std::string Request::extract_resource_path() const
     std::regex regex(pattern);
     if (std::regex_match(url_, result, regex))
     {
-        std::string path = result[1];
+        std::string path(config.get_root_dir());
+        path.append(result[1]);
         if (path.at(path.size() - 1) == '/')
             path.append("index.html");
         return path;
@@ -45,7 +46,7 @@ std::string Request::extract_resource_path() const
 
 bool Request::forbidden(const ServerConfig& config) const
 {
-    std::string path = extract_resource_path();
+    std::string path = extract_resource_path(config);
     std::ifstream file(config.get_root_dir() + path);
     file.get();
     bool res = file.bad();
@@ -55,7 +56,7 @@ bool Request::forbidden(const ServerConfig& config) const
 
 bool Request::not_found(const ServerConfig& config) const
 {
-    std::string path = extract_resource_path();
+    std::string path = extract_resource_path(config);
     if (path.empty())
         return false;
 
@@ -114,34 +115,30 @@ bool check_request(std::string request)
     auto is_end = 0;
     while(getline(f, s))
     {
-        std::vector<std::string> strings;
-        std::istringstream g(s);
-        std::string aux;
+        std::cout << s << std::endl;
 
-        if(is_end == 1)
-            return false;
-
-        /* si le dernier caractere de la ligne est different
-           de \r alors erreur
-           */
         size_t len = s.length();
         if(s.at(len-1) != '\r')
             return false;
 
-        /* on cherche la fin de requete */
         if(s.compare("\r") == 0)
         {
             is_end = 1;
             continue;
         }
 
+        s.erase(len-1);
+
+        std::vector<std::string> strings;
+        std::istringstream g(s);
+        std::string aux;
+
+        if(is_end == 1)
+            return false;
+        
         /* on decoupe la ligne en champs */
         while(getline(g, aux, ' '))
             strings.push_back(aux);
-
-        /* s'il y a plus de deux mots alors erreur */
-        if(strings.size() != 2)
-            return false;
 
         /* si l'argument du head connection est different 
            de close ou de keep-alive alors erreur

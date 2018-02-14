@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <errno.h>
 #include <fcntl.h>
 
 #include "response.hh"
@@ -28,9 +29,9 @@ std::string get_date()
   return buffer;
 }
 
-int get_file_len(Request& request)
+int get_file_len(Request& request, const ServerConfig& config)
 {
-  std::string file_name = request.extract_resource_path();
+  std::string file_name = request.extract_resource_path(config);
   std::ifstream file(file_name, std::ifstream::binary | std::ifstream::in);
   file.seekg(0, std::ios::end);
   int size = file.tellg();
@@ -38,14 +39,14 @@ int get_file_len(Request& request)
   return size;
 }
 
-std::string Response::build_response(Request& request)
+std::string Response::build_response(Request& request, const ServerConfig& config)
 {
   std::string res;
   std::stringstream ss;
   ss << version_ << " " << status_code_ << " " << reason_phrase_ << "\r\n";
-  ss << "Date: " << get_date() << " GMT" << "\r\n" << "\r\n"; 
-  std::cout << "response: " << ss.str() << std::endl;
-  ss << "Content-Length: " << get_file_len(request) << "\r\n\r\n";
+  ss << "Date: " << get_date() << " GMT" << "\r\n";
+  ss << "Content-Length: " << get_file_len(request, config) << "\r\n\r\n";
+  std::cout << "response \n" << ss.str() << std::endl;
   return ss.str();
 }
    
@@ -90,7 +91,7 @@ std::string& Response::get_code()
 int Response::send_data(Request& rq, ServerConfig& config, int fd)
 {
   std::string response = rq.process_request(*this, config);
-  std::string file_name = rq.extract_resource_path();
+  std::string file_name = rq.extract_resource_path(config);
   size_t response_len = response.length();
   int res = send(fd, response.c_str(), response_len, 0);
   if(!res)
@@ -100,13 +101,19 @@ int Response::send_data(Request& rq, ServerConfig& config, int fd)
   }
   if(file_name != "")
   {
-    int file_fd = open(file_name.c_str(), O_RDONLY);
+    int file_fd = open(rq.get_url().c_str(), O_RDONLY);
+    if(file_fd == -1)
+    {
+      std::cout << "error" << std::endl;
+    }
+
     struct stat stat_buf;
     fstat(file_fd, &stat_buf);
-    off_t offset = 0;
-    res = sendfile(fd, file_fd, &offset, stat_buf.st_size);
-    if(!res)
+    res = sendfile(fd, file_fd, NULL, stat_buf.st_size);
+    std::cout << "res " << fd <<  "  " << file_fd << std::endl;
+    if(res == -1)
     {
+      std::cout << strerror(errno) << std::endl;
       close(file_fd);
       std::error_code ec(errno, std::generic_category());
       throw std::system_error(ec, "Fail sendfile.");

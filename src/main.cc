@@ -14,7 +14,7 @@
 
 constexpr int max_listen = 1000;
 constexpr int max_events = 1000;
-constexpr int max_request_len = 255;
+constexpr int max_request_len = 1024;
 bool loop_handler = true;
 
 /**
