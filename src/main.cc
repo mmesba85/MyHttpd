@@ -51,8 +51,8 @@ void communicate(int fd, ServerConfig config)
     if(method.compare("GET") == 0)
     {
       GETRequest rq(buf);
-      //std::string& version = rq.get_version();
-      Response rp("HTTP/1.1");
+      std::string version = rq.get_version();
+      Response rp(version);
       rp.send_data(rq, config, fd);
     } 
   }
