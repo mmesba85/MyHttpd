@@ -5,4 +5,4 @@ These are the steps for the myHttpd project:
         - ThreadPool                [DONE]
         - Server Connection         [TODO]
         - GET method                [TODO]
-        - CGI                       [TODO]
+        - CGI                       [STARTED]
