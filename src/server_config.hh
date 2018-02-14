@@ -6,6 +6,7 @@
 #include <string>
 
 #include "toml/toml.hpp"
+#include "cgi-handler.hh"
 
 class ServerConfig
 {
@@ -19,6 +20,7 @@ private:
   std::map<std::string, std::string> error_;
   std::map<std::string, std::string> proxy_pass_;
 
+  CgiHandler cgi_handler_;
 public:
   /* Constructors */
   ServerConfig();

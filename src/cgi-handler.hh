@@ -2,8 +2,9 @@
 
 #include <string>
 
-#include "server_config.hh"
 #include "request.hh"
+
+class ServerConfig;
 
 class CgiHandler
 {
