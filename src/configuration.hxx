@@ -4,6 +4,7 @@
 #include <vector>
 
 Configuration::Configuration(const std::string filename)
+  : dry_run_(false)
 {
   stream_.open(filename);
   if (!stream_.is_open())
@@ -26,16 +27,6 @@ void Configuration::fill_configuration()
   {
     log_file_ = "";
   }
-
-  try
-  {
-    dry_run_ = toml::get<bool>(data.at("dry_run"));
-  }
-  catch(const std::exception& e)
-  {
-    dry_run_ = false;
-  }
-
 
   auto table = toml::get<std::vector<toml::Table>>(data.at("server"));
   for (auto it = table.begin(); it != table.end(); ++it)
@@ -140,12 +131,20 @@ void Configuration::fill_configuration()
 
     try
     {
-      // if (it->find("error") != it->end())
-      //   std::cout << "TOTO" << std::endl;
       auto error =
           toml::get<toml::Array<toml::Array<toml::String>>>(it->at("error"));
       for (auto iu = error.begin(); iu != error.end(); ++iu)
         one.insert_to_error(iu->at(0), iu->at(1));
+    }
+    catch(const std::exception& e)
+    {}
+
+    try
+    {
+      auto error =
+          toml::get<toml::Array<toml::Array<toml::String>>>(it->at("proxy_pass"));
+      for (auto iu = error.begin(); iu != error.end(); ++iu)
+        one.insert_to_proxy_pass(iu->at(0), iu->at(1));
     }
     catch(const std::exception& e)
     {}
