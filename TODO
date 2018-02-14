@@ -1,6 +1,8 @@
 These are the steps for the myHttpd project:
     - CORE FEATURES:
         - Server configuration      [TODO]
+            - Catch good errors     [TODO]
         - ThreadPool                [TODO]
         - Server Connection         [TODO]
+        - GET method                [TODO]
         - CGI                       [TODO]
