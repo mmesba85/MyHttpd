@@ -61,7 +61,7 @@ bool Request::not_found(const ServerConfig& config) const
         return false;
 
     std::ifstream file(path);
-    bool res = file.good();
+    bool res = file.fail();
     file.close();
     return res;
 }

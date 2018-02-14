@@ -82,9 +82,9 @@ int Response::get_file_dscr(const ServerConfig& config, const std::string& file_
 {
   std::map<std::string, std::string> map = config.get_error();
   int file_fd = 0;
-  if(file_name.compare("") != 0)
+  if(status_code_.compare("200") == 0 && file_name.compare("") != 0)
     file_fd = open(file_name.c_str(), O_RDONLY);
-  else
+  else if(!map.empty())
   {
     std::map<std::string, std::string>::iterator it;
     it = map.find(status_code_);
@@ -96,6 +96,7 @@ int Response::get_file_dscr(const ServerConfig& config, const std::string& file_
     std::error_code ec(errno, std::generic_category());
     throw std::system_error(ec, "Fail open ressource."); 
   }
+  std::cout << file_fd << std::endl;
   return file_fd;
 }
 
@@ -106,6 +107,7 @@ int Response::process_response(const ServerConfig& config, int fd)
   int file_fd = get_file_dscr(config, "");
   if(file_fd == 0)
   {
+    response.append("\r\n");
     res = send(fd, response.c_str(), response.length(), MSG_MORE);
     if(res == -1)
     {
@@ -126,6 +128,7 @@ int Response::process_response(Request& rq, const ServerConfig& config, int fd)
   int file_fd = get_file_dscr(config, file_name.c_str());
   if(file_fd == 0)
   {
+    response.append("\r\n");
     res = send(fd, response.c_str(), response.length(), MSG_MORE);
     if(res == -1)
     {
