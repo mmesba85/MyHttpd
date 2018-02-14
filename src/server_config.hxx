@@ -1,13 +1,13 @@
 #include "server_config.hh"
 
 ServerConfig::ServerConfig()
-    : cgi_handler_("")
+  //  : cgi_handler_("")
 {
 }
 
 ServerConfig::ServerConfig(std::string name, std::string port, std::string ip,
   std::string root_dir)
-    : cgi_handler_("")
+  //  : cgi_handler_("")
 {
   server_name_ = name;
   port_ = port;

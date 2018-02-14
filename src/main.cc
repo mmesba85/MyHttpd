@@ -14,7 +14,7 @@
 
 constexpr int max_listen = 1000;
 constexpr int max_events = 1000;
-constexpr int max_request_len = 1024;
+constexpr int max_request_len = 2000;
 bool loop_handler = true;
 
 /**
@@ -29,21 +29,24 @@ void communicate(int fd, ServerConfig config)
 {
   char buf[max_request_len];
   auto res = read(fd, buf, max_request_len);
+  buf[res] = '\0';
+  
+  std::cout << "request: \n" << buf << std::endl;
+
   if (res == -1)
   {
     std::error_code ec(errno, std::generic_category());
     throw std::system_error(ec, "read data from descriptor failed."); 
   }
+
   bool is_valid = check_request(buf);
+  std::cout << "is valid : " << is_valid << std::endl;
   std::string response;
   if(!is_valid) //syntax error
   {
     Response rp("HTTP/1.1");    
     rp.set_code("400");
-    response = rp.build_response();
-    size_t response_len = response.length();
-    std::cout << "response: " << response << std::endl;
-    send(fd, response.c_str(), response_len, 0);
+    rp.process_response(config, fd);
   }
   else
   {
@@ -53,11 +56,10 @@ void communicate(int fd, ServerConfig config)
       GETRequest rq(buf);
       std::string version = rq.get_version();
       Response rp(version);
-      rp.send_data(rq, config, fd);
+      rp.process_response(rq, config, fd);
     } 
   }
-  std::cout << "is valid : " << is_valid << std::endl;
-  std::cout << fd;
+  
 }
 
 /* main server connection loop
@@ -101,9 +103,8 @@ int main_loop(ServerConnection& s)
           events[i].events & EPOLLHUP ||
           !(events[i].events & EPOLLIN)) 
       {
-        std::cout << "ici" << '\n';
-        std::error_code ec(errno, std::generic_category());
-        throw std::system_error(ec, "event error.");
+       // std::error_code ec(errno, std::generic_category());
+       // throw std::system_error(ec, "event error.");
         close(events[i].data.fd);
       }
       else if (s.get_socket() == events[i].data.fd)
