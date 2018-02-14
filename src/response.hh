@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "server_config.hh"
+
 class Request;
 class Response
 {
