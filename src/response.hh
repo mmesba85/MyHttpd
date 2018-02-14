@@ -14,7 +14,10 @@ class Response
     std::string build_response();
     void set_code(const std::string& code);
     void set_version(const std::string& version);
-    int send_data(Request& request, ServerConfig& config, int fd);
+    int process_response(Request& request, const ServerConfig& config, int fd);
+    int process_response(const ServerConfig& config, int fd);
+    int get_file_dscr(const ServerConfig& config, const std::string& file_name);
+    int send_response(int fd, int file_fd, std::string& response);
     std::string& get_code();
   private:
     std::string version_;
