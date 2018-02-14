@@ -54,9 +54,6 @@ std::string GETRequest::process_request(Response& rp, const ServerConfig& config
   else if(version_.compare("HTTP/1.1") == 0 && host_ == "")
     rp.set_code("400");
   else
-  {
     rp.set_code("200");
-    return rp.build_response(*this, config);
-  }
   return rp.build_response();
 }
