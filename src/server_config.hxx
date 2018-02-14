@@ -30,12 +30,17 @@ std::string ServerConfig::get_ip() const
 
 std::string ServerConfig::get_name() const
 {
-    return server_name_;
+  return server_name_;
 }
 
 std::string ServerConfig::get_root_dir() const
 {
-    return this->root_dir_;
+  return this->root_dir_;
+}
+
+std::map<std::string, std::string> get_error() const
+{
+  return this->error_;
 }
 
 void ServerConfig::insert_to_configuration(std::string a, std::string& b)
@@ -89,3 +94,12 @@ void ServerConfig::print()
     std::cout << it->first << ", " <<it->second << '\n';
   }
 }
+// 
+// bool ServerConfig::is_cgi(Request::Request request)
+// {
+//   std::string url = request.get_url();
+//   if (request.get_method() == "GET")
+//   {
+//     std::string token = s.substr(0, s.find(delimiter));
+//   }
+// }
