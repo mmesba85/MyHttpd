@@ -61,7 +61,7 @@ bool Request::not_found(const ServerConfig& config) const
         return false;
 
     std::ifstream file(path);
-    bool res = !file;
+    bool res = file.good();
     file.close();
     return res;
 }
@@ -115,8 +115,6 @@ bool check_request(std::string request)
     auto is_end = 0;
     while(getline(f, s))
     {
-        std::cout << s << std::endl;
-
         size_t len = s.length();
         if(s.at(len-1) != '\r')
             return false;
