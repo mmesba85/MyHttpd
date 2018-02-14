@@ -59,8 +59,7 @@ bool Request::not_found(const ServerConfig& config) const
     if (path.empty())
         return false;
 
-    std::cout << config.get_root_dir() + path << std::endl;
-    std::ifstream file(config.get_root_dir() + path);
+    std::ifstream file(path);
     bool res = !file;
     file.close();
     return res;
