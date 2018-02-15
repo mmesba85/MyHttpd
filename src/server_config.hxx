@@ -96,7 +96,7 @@ void ServerConfig::print()
   }
 }
 
-static std::vector<string> string_to_array(std::string s, char delim)
+/* static std::vector<string> string_to_array(std::string s, char delim)
 {
   std::vector<std::string> strings;
   std::istringstream g(s);
@@ -128,4 +128,4 @@ bool ServerConfig::is_cgi(GETRequest::GETRequest request)
   if (std::find(cgi_ext.begin(), cgi_ext.end(), ext) != cgi_ext.end())
     return true;
   return false;
-}
+}*/
