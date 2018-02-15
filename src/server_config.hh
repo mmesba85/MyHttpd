@@ -25,7 +25,8 @@ private:
   std::map<std::string, std::string> configurations_;
   std::map<std::string, std::string> error_;
   std::map<std::string, std::string> proxy_pass_;
-
+  
+  void update_cgi_env(Request& request);
 public:
   /* Constructors */
   ServerConfig();
