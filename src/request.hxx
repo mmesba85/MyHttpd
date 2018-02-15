@@ -56,6 +56,7 @@ bool Request::forbidden(const ServerConfig& config) const
 bool Request::not_found(const ServerConfig& config) const
 {
   std::string path = extract_resource_path(config);
+  std::cout << "path : " << path << std::endl;
   struct stat buf;
   return !(stat(path.c_str(), &buf) == 0);
 }
@@ -137,8 +138,11 @@ bool check_request(std::string request)
            */
         if(strings[0].compare("Connection:") == 0 && 
                 strings[1].compare("close") != 0 &&
-                strings[1].compare("keep-alive") != 0)
-            return false;
+                strings[1].compare("Keep-Alive") != 0)
+        {
+          std::cout << "laaa " << std::endl;
+          return false;
+        }
     }
     if(is_end == 0)
         return false;
