@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <map>
 
 #include "toml/toml.hpp"
 
@@ -18,6 +19,9 @@ private:
   std::string ip_;
   std::string root_dir_;
   
+  std::string env_path_;
+  std::map<int, FILE> pipes;
+
   std::map<std::string, std::string> configurations_;
   std::map<std::string, std::string> error_;
   std::map<std::string, std::string> proxy_pass_;
@@ -26,7 +30,7 @@ public:
   /* Constructors */
   ServerConfig();
   ServerConfig(std::string name, std::string ip, std::string port,
-    std::string root_dir);
+    std::string root_dir, const std::string& env_path);
   virtual ~ServerConfig();
 
   /* Getter and setters */
@@ -47,6 +51,8 @@ public:
   void print();
 
   bool is_cgi(Request& request);
+  int process_cgi(Request& request, std::string rep_begin);
+  void cancel(int fd);
 };
 
 #include "server_config.hxx"
