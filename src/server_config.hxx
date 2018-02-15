@@ -124,3 +124,23 @@ bool ServerConfig::is_cgi(Request& request)
     return true;
   return false;
 }
+
+
+///////// CGI PART
+
+int ServerConfig::process_cgi(Request& request, std::string rep_begin)
+{
+    request = request;
+    rep_begin = rep_begin;
+    return 0;
+}
+
+void ServerConfig::cancel(int fd)
+{
+    ++fd;
+}
+
+void ServerConfig::update_cgi_env(Request& request)
+{
+    request = request;
+}
