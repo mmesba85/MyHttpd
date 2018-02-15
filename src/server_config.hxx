@@ -5,8 +5,9 @@ ServerConfig::ServerConfig()
 {}
 
 ServerConfig::ServerConfig(std::string name, std::string port, std::string ip,
-  std::string root_dir)
-    : server_name_(name), port_(port), ip_(ip), root_dir_(root_dir)
+  std::string root_dir, const std::string& env_path)
+    : server_name_(name), port_(port), ip_(ip), root_dir_(root_dir), env_path_(
+            env_path)
 {}
 
 ServerConfig::~ServerConfig()
