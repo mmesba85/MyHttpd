@@ -12,6 +12,7 @@
 #include "response.hh"
 #include "request.hh"
 
+
 Response::Response(const std::string& version)
 {
   version_ = version;

@@ -7,10 +7,13 @@
 #include <sys/sendfile.h>
 #include <unistd.h>
 #include <signal.h>
+#include <mutex>
 #include "server_connection.hh"
 #include "request.hh"
 #include "response.hh"
 #include "get_request.hh"
+
+
 
 constexpr int max_listen = 100;
 constexpr int max_events = 100;
@@ -62,7 +65,7 @@ void communicate(int fd, ServerConfig config)
       rp.process_response(rq, config, fd);
     } 
   }
-  
+ // close(fd);  
 }
 
 /* main server connection loop
@@ -122,8 +125,8 @@ int main_loop(ServerConnection& s)
       {
         auto dscr = events[i].data.fd;
         communicate(dscr, s.get_config());
-       // s.get_pool().add_task(std::bind(communicate, dscr, s.get_config()));
-       // s.get_pool().start();
+        //s.get_pool().add_task(std::bind(communicate, dscr, s.get_config()));
+        //s.get_pool().start();
       }
     }
   }
