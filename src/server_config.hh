@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <sstream>
 
 #include "toml/toml.hpp"
 #include "cgi-handler.hh"
@@ -45,7 +46,7 @@ public:
   /* Print this server configuration */
   void print();
 
-  // bool is_cgi(Request::Request request);
+  bool is_cgi(Request::Request request);
 };
 
 #include "server_config.hxx"
