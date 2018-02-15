@@ -1,3 +1,5 @@
+#include <ostream>
+
 #include "request.hh"
 
 #include <regex>
@@ -25,45 +27,37 @@ bool Request::bad_method() const
 
 std::string Request::extract_resource_path(const ServerConfig& config) const
 {
-    std::string pattern("");
-    // build the pattern
-    pattern.append("((/[a-zA-Z0-9-_=\\.#&]?)+)"); // the resource path.
-    pattern.append("?([a-zA-Z0-9-_=\\./\\+#]&)*"); // the query
+  std::string pattern("");
+  // build the pattern
+  pattern.append("((/[a-zA-Z0-9-_=\\.#&]?)+)"); // the resource path.
+  pattern.append("?([a-zA-Z0-9-_=\\./\\+#]&)*"); // the query
 
-    std::smatch result;
-    std::regex regex(pattern);
-    if (std::regex_match(url_, result, regex))
-    {
-        std::string path(config.get_root_dir());
-        path.append(result[1]);
-        if (path.at(path.size() - 1) == '/')
-            path.append("index.html");
-        return path;
-    }
-
-    return "";
+  std::smatch result;
+  std::regex regex(pattern);
+  if (std::regex_match(url_, result, regex))
+  {
+    std::string path(config.get_root_dir());
+    path.append(result[1]);
+    if (path.at(path.size() - 1) == '/')
+      path.append("index.html");
+    return path;
+  }
+  return "";
 }
 
 bool Request::forbidden(const ServerConfig& config) const
 {
-    std::string path = extract_resource_path(config);
-    std::ifstream file(config.get_root_dir() + path);
-    file.get();
-    bool res = file.bad();
-    file.close();
-    return res;
+  std::string path = extract_resource_path(config);
+  if(access(path.c_str(), R_OK) == 0)
+    return false;
+  return true;
 }
 
 bool Request::not_found(const ServerConfig& config) const
 {
-    std::string path = extract_resource_path(config);
-    if (path.empty())
-        return false;
-
-    std::ifstream file(path);
-    bool res = file.fail();
-    file.close();
-    return res;
+  std::string path = extract_resource_path(config);
+  struct stat buf;
+  return !(stat(path.c_str(), &buf) == 0);
 }
 
 std::string get_method(std::string request)

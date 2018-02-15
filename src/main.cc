@@ -30,8 +30,11 @@ void communicate(int fd, ServerConfig config)
   char buf[max_request_len];
   auto res = read(fd, buf, max_request_len);
   buf[res] = '\0';
-  
-  std::cout << "request: \n" << buf << std::endl;
+
+  if(res == 0)
+    return;
+
+  std::cout << "request: \n" << buf << "*" << std::endl;
 
   if (res == -1)
   {

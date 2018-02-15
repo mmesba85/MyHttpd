@@ -75,6 +75,7 @@ bool ServerConnection::set_connection(struct epoll_event& event,
     }
     else
     {
+      close(fd);
       std::error_code ec(errno, std::generic_category());
       throw std::system_error(ec, "No connections are present to be accepted.");    
     }
@@ -82,6 +83,7 @@ bool ServerConnection::set_connection(struct epoll_event& event,
   
   if(fcntl(fd, F_SETFL, O_NONBLOCK) < 0)
   {
+    close(fd);
     std::error_code ec(errno, std::generic_category());
     throw std::system_error(ec, "fcntl failed.");
   }
@@ -91,6 +93,7 @@ bool ServerConnection::set_connection(struct epoll_event& event,
   
   if(epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event) == -1)
   {
+    close(fd);
     std::error_code ec(errno, std::generic_category());
     throw std::system_error(ec, "epoll_ctl failed.");
   }

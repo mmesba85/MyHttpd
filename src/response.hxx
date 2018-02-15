@@ -29,16 +29,6 @@ std::string get_date()
   strftime(buffer, 80, "%a, %d %b %Y %T", ptm);
   return buffer;
 }
-
-int get_file_len(Request& request, const ServerConfig& config)
-{
-  std::string file_name = request.extract_resource_path(config);
-  std::ifstream file(file_name, std::ifstream::binary | std::ifstream::in);
-  file.seekg(0, std::ios::end);
-  int size = file.tellg();
-  file.close();
-  return size;
-}
    
 std::string Response::build_response()
 {
@@ -93,10 +83,10 @@ int Response::get_file_dscr(const ServerConfig& config, const std::string& file_
   }
   if(file_fd == -1)
   {
+    close(file_fd);
     std::error_code ec(errno, std::generic_category());
     throw std::system_error(ec, "Fail open ressource."); 
   }
-  std::cout << file_fd << std::endl;
   return file_fd;
 }
 
