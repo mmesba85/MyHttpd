@@ -16,12 +16,12 @@ private:
   std::string port_;
   std::string ip_;
   std::string root_dir_;
-
+  CgiHandler cgi_handler_;
+  
   std::map<std::string, std::string> configurations_;
   std::map<std::string, std::string> error_;
   std::map<std::string, std::string> proxy_pass_;
 
- // CgiHandler cgi_handler_;
 public:
   /* Constructors */
   ServerConfig();
