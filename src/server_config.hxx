@@ -1,12 +1,12 @@
 #include "server_config.hh"
+#include "request.hh"
 
 ServerConfig::ServerConfig()
 {}
 
 ServerConfig::ServerConfig(std::string name, std::string port, std::string ip,
   std::string root_dir)
-    : server_name_(name), port_(port), ip_(ip), root_dir_(root_dir),
-    cgi_handler_("")
+    : server_name_(name), port_(port), ip_(ip), root_dir_(root_dir)
 {}
 
 ServerConfig::~ServerConfig()
@@ -90,7 +90,7 @@ void ServerConfig::print()
   }
 }
 
-/* static std::vector<string> string_to_array(std::string s, char delim)
+std::vector<std::string> string_to_array(std::string s, char delim)
 {
   std::vector<std::string> strings;
   std::istringstream g(s);
@@ -100,7 +100,7 @@ void ServerConfig::print()
   return strings;
 }
 
-bool ServerConfig::is_cgi(GETRequest::GETRequest request)
+bool ServerConfig::is_cgi(Request& request)
 {
   std::string url = request.get_url();
 
@@ -110,10 +110,10 @@ bool ServerConfig::is_cgi(GETRequest::GETRequest request)
   std::string query;
   getline(g, query, '?');
 
-  if (configurations_.find("cgi_get") == configurations_.end())
+  if (configurations_.find("cgi_ext") == configurations_.end())
     return false;
 
-  std::vector<std::string> cgi_ext = string_to_array(configurations_.at("cgi_ext"));
+  std::vector<std::string> cgi_ext = string_to_array(configurations_.at("cgi_ext"), ',');
   std::istringstream h(script);
   std::string ext;
   getline(g, ext, '.');
@@ -122,4 +122,4 @@ bool ServerConfig::is_cgi(GETRequest::GETRequest request)
   if (std::find(cgi_ext.begin(), cgi_ext.end(), ext) != cgi_ext.end())
     return true;
   return false;
-}*/
+}

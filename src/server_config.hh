@@ -7,7 +7,8 @@
 #include <sstream>
 
 #include "toml/toml.hpp"
-// #include "cgi-handler.hh"
+
+class Request;
 
 class ServerConfig
 {
@@ -16,7 +17,6 @@ private:
   std::string port_;
   std::string ip_;
   std::string root_dir_;
-  CgiHandler cgi_handler_;
   
   std::map<std::string, std::string> configurations_;
   std::map<std::string, std::string> error_;
@@ -46,7 +46,7 @@ public:
   /* Print this server configuration */
   void print();
 
-//  bool is_cgi(Request::Request request);
+  bool is_cgi(Request& request);
 };
 
 #include "server_config.hxx"

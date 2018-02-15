@@ -2,8 +2,7 @@
 
 #include <fstream>
 
-#include "server_config.hh"
-
+class ServerConfig;
 class Response;
 
 class Request

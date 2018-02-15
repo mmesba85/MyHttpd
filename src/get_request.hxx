@@ -1,5 +1,5 @@
-#include "get_request.hh"
 #include "response.hh" 
+#include "get_request.hh"
 
 GETRequest::GETRequest(std::string request)
 {

@@ -1,6 +1,10 @@
 #include <ostream>
-
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/sendfile.h>
 #include "request.hh"
+#include "server_config.hh"
 
 #include <regex>
 

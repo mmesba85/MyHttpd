@@ -1,9 +1,7 @@
 #pragma once
 
-#include "server_config.hh"
-#include "response.hh"
-#include "request.hh"
 #include "threadpool/thread-pool.hh"
+#include "server_config.hh"
 
 class ServerConnection
 {

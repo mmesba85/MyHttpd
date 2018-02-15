@@ -2,9 +2,9 @@
 
 #include <string>
 
-#include "server_config.hh"
-
+class ServerConfig;
 class Request;
+
 class Response
 {
   public:

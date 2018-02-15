@@ -9,8 +9,9 @@
 #include <errno.h>
 #include <fcntl.h>
 
-#include "response.hh"
+#include "server_config.hh"
 #include "request.hh"
+#include "response.hh"
 
 
 Response::Response(const std::string& version)
