@@ -96,11 +96,36 @@ void ServerConfig::print()
   }
 }
 
-// bool ServerConfig::is_cgi(Request::Request request)
-// {
-//   std::string url = request.get_url();
-//   if (request.get_method() == "GET")
-//   {
-//     std::string token = s.substr(1, s.find("$"));
-//   }
-// }
+static std::vector<string> string_to_array(std::string s, char delim)
+{
+  std::vector<std::string> strings;
+  std::istringstream g(s);
+  std::string aux;
+  while(getline(g, aux, delim))
+    strings.push_back(aux);
+  return strings;
+}
+
+bool ServerConfig::is_cgi(GETRequest::GETRequest request)
+{
+  std::string url = request.get_url();
+
+  std::istringstream g(url);
+  std::string script;
+  getline(g, script, '?');
+  std::string query;
+  getline(g, query, '?');
+
+  if (configurations_.find("cgi_get") == configurations_.end())
+    return false;
+
+  std::vector<std::string> cgi_ext = string_to_array(configurations_.at("cgi_ext"));
+  std::istringstream h(script);
+  std::string ext;
+  getline(g, ext, '.');
+  getline(g, ext, '.');
+
+  if (std::find(cgi_ext.begin(), cgi_ext.end(), ext) != cgi_ext.end())
+    return true;
+  return false;
+}
