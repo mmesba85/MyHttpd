@@ -33,7 +33,7 @@ std::string Request::extract_resource_path(const ServerConfig& config) const
 {
   std::string pattern("");
   // build the pattern
-  pattern.append("((/[a-zA-Z0-9-_=\\.#&]?)+)"); // the resource path.
+  pattern.append("((/[a-zA-Z0-9-_=\\.#&]*)+)"); // the resource path.
   pattern.append("?([a-zA-Z0-9-_=\\./\\+#]&)*"); // the query
 
   std::smatch result;
@@ -60,7 +60,6 @@ bool Request::forbidden(const ServerConfig& config) const
 bool Request::not_found(const ServerConfig& config) const
 {
   std::string path = extract_resource_path(config);
-  std::cout << "path : " << path << std::endl;
   struct stat buf;
   return !(stat(path.c_str(), &buf) == 0);
 }

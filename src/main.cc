@@ -37,7 +37,7 @@ void communicate(int fd, ServerConfig config)
   if(res == 0)
     return;
 
-  std::cout << "request: \n" << buf << "*" << std::endl;
+  std::cout << "request: \n" << buf << std::endl;
 
   if (res == -1)
   {
@@ -135,7 +135,7 @@ int main_loop(ServerConnection& s)
 
 void end(int sig)
 {
-  std::cout << "end "<<  sig << '\n';
+  std::cout << "\nend "<<  sig << '\n';
   loop_handler = false;
 }
 

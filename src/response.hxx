@@ -37,7 +37,8 @@ std::string Response::build_response()
   std::string res;
   std::stringstream ss;
   ss << version_ << " " << status_code_ << " " << reason_phrase_ << "\r\n";
-  ss << "Date: " << get_date() << " GMT" << "\r\n"; 
+  ss << "Date: " << get_date() << " GMT" << "\r\n";
+  ss << "Content-Length: ";
   std::cout << "response: " << ss.str() << std::endl;
   return ss.str();
 }
@@ -76,7 +77,6 @@ int Response::get_file_dscr(const ServerConfig& config, const std::string& file_
   int file_fd = 0;
   if(status_code_.compare("200") == 0 && file_name.compare("") != 0)
     file_fd = open(file_name.c_str(), O_RDONLY);
-  std::cout << "file_fd " << file_fd << std::endl;
   if(!map.empty())
   {
     std::map<std::string, std::string>::iterator it;
@@ -100,7 +100,7 @@ int Response::process_response(const ServerConfig& config, int fd)
   int file_fd = get_file_dscr(config, "");
   if(file_fd == 0)
   {
-    response.append("\r\n");
+    response.append("0\r\n\r\n");
     res = send(fd, response.c_str(), response.length(), MSG_MORE);
     if(res == -1)
     {
@@ -121,7 +121,7 @@ int Response::process_response(Request& rq, const ServerConfig& config, int fd)
   int file_fd = get_file_dscr(config, file_name.c_str());
   if(file_fd == 0)
   {
-    response.append("\r\n");
+    response.append("0\r\n\r\n");
     res = send(fd, response.c_str(), response.length(), MSG_MORE);
     if(res == -1)
     {
@@ -141,7 +141,6 @@ int Response::send_response(int fd, int file_fd, std::string& response)
 {
   auto file_len = lseek(file_fd, 0, SEEK_END);
   lseek(file_fd, 0, SEEK_SET);
-  response.append("Content-Length: ");
   response.append(std::to_string(file_len));
   response.append("\r\n\r\n");
 
