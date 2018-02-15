@@ -10,7 +10,7 @@
 
 #include "executor.hh"
 
-#define DEFAULT_MAX_THREADS 1
+constexpr unsigned DEFAULT_MAX_THREADS = 10;
 
 class ThreadPool
 {
