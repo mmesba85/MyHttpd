@@ -12,8 +12,8 @@
 #include "response.hh"
 #include "get_request.hh"
 
-constexpr int max_listen = 1000;
-constexpr int max_events = 1000;
+constexpr int max_listen = 100;
+constexpr int max_events = 100;
 constexpr int max_request_len = 2000;
 bool loop_handler = true;
 
@@ -121,8 +121,9 @@ int main_loop(ServerConnection& s)
       else 
       {
         auto dscr = events[i].data.fd;
-        s.get_pool().add_task(std::bind(communicate, dscr, s.get_config()));
-        s.get_pool().start();
+        communicate(dscr, s.get_config());
+       // s.get_pool().add_task(std::bind(communicate, dscr, s.get_config()));
+       // s.get_pool().start();
       }
     }
   }
