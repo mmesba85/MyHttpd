@@ -164,3 +164,8 @@ void Configuration::print()
     std::cout << std::endl;
   }
 }
+
+std::vector<ServerConfig>& Configuration::get_list()
+{
+  return list_server_;
+}

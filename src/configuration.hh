@@ -21,6 +21,9 @@ public:
   /* Read the stream_ and fill the configuration */
   void fill_configuration();
 
+  /* Getter for the list_server */
+  std::vector<ServerConfig>& get_list();
+
   /* Print the configuration */
   void print();
 };
