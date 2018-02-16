@@ -131,6 +131,7 @@ int main_loop(std::vector<ServerConnection> list_c, std::ofstream& log)
     }
     ev.push_back(event);
   } 
+  ThreadPool th;
   ServerConfig aux;
   std::array<struct epoll_event, max_events> events;
   while (loop_handler)
@@ -164,10 +165,8 @@ int main_loop(std::vector<ServerConnection> list_c, std::ofstream& log)
       else
       {
         auto dscr = events[i].data.fd;
-        communicate(dscr, aux, log);
-        //ThreadPool th;
-        //th.add_task(std::bind(communicate, dscr, aux, log));
-        //th.start();
+        th.add_task(std::bind(communicate, dscr, aux, log));
+
       } 
     }
   }

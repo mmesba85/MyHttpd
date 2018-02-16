@@ -16,9 +16,18 @@ Configuration::~Configuration()
   stream_.close();
 }
 
-void Configuration::fill_configuration()
+int Configuration::fill_configuration()
 {
-  const auto data = toml::parse(stream_);
+  toml::Data data;
+  try
+  {
+    data = toml::parse(stream_);
+  }
+  catch(toml::syntax_error)
+  {
+    exit(2);
+  }
+
   try
   {
     log_file_ = toml::get<std::string>(data.at("log_file"));
@@ -37,7 +46,7 @@ void Configuration::fill_configuration()
       auto server_name =  toml::get<std::string>(it->at("server_name"));
       one.set_server_name(server_name);
     }
-    catch(const std::exception& e)
+    catch(toml::type_error)
     {
       exit(2);
     }
@@ -47,7 +56,7 @@ void Configuration::fill_configuration()
       auto ip =  toml::get<std::string>(it->at("ip"));
       one.set_ip(ip);
     }
-    catch(const std::exception& e)
+    catch(toml::type_error)
     {
       exit(2);
     }
@@ -57,7 +66,7 @@ void Configuration::fill_configuration()
       auto port =  toml::get<std::string>(it->at("port"));
       one.set_port(port);
     }
-    catch(const std::exception& e)
+    catch(toml::type_error)
     {
       exit(2);
     }
@@ -67,7 +76,7 @@ void Configuration::fill_configuration()
       auto root_dir =  toml::get<std::string>(it->at("root_dir"));
       one.set_root_dir(root_dir);
     }
-    catch(const std::exception& e)
+    catch(toml::type_error)
     {
       exit(2);
     }
@@ -77,7 +86,9 @@ void Configuration::fill_configuration()
       auto gzip = toml::get<std::string>(it->at("gzip"));
       one.insert_to_configuration("gzip", gzip);
     }
-    catch(const std::exception& e)
+    catch(std::out_of_range)
+    {}
+    catch(toml::type_error)
     {}
 
     try
@@ -85,7 +96,9 @@ void Configuration::fill_configuration()
       auto log = toml::get<std::string>(it->at("log"));
       one.insert_to_configuration("log", log);
     }
-    catch(const std::exception& e)
+    catch(std::out_of_range)
+    {}
+    catch(toml::type_error)
     {}
 
     try
@@ -93,7 +106,9 @@ void Configuration::fill_configuration()
       auto cgi_ext = toml::get<std::string>(it->at("cgi_ext"));
       one.insert_to_configuration("cgi_ext", cgi_ext);
     }
-    catch(const std::exception& e)
+    catch(std::out_of_range)
+    {}
+    catch(toml::type_error)
     {}
 
     try
@@ -101,7 +116,9 @@ void Configuration::fill_configuration()
       auto ssl_certificate = toml::get<std::string>(it->at("ssl_certificate"));
       one.insert_to_configuration("ssl_certificate", ssl_certificate);
     }
-    catch(const std::exception& e)
+    catch(std::out_of_range)
+    {}
+    catch(toml::type_error)
     {}
 
     try
@@ -110,7 +127,9 @@ void Configuration::fill_configuration()
                 toml::get<std::string>(it->at("ssl_certificate_key"));
       one.insert_to_configuration("ssl_certificate_key", ssl_certificate_key);
     }
-    catch(const std::exception& e)
+    catch(std::out_of_range)
+    {}
+    catch(toml::type_error)
     {}
 
     try
@@ -118,7 +137,9 @@ void Configuration::fill_configuration()
       auto basic_auth = toml::get<std::string>(it->at("basic_auth"));
       one.insert_to_configuration("basic_auth", basic_auth);
     }
-    catch(const std::exception& e)
+    catch(std::out_of_range)
+    {}
+    catch(toml::type_error)
     {}
 
     try
@@ -126,7 +147,9 @@ void Configuration::fill_configuration()
       auto basic_auth_file = toml::get<std::string>(it->at("basic_auth_file"));
       one.insert_to_configuration("basic_auth_file", basic_auth_file);
     }
-    catch(const std::exception& e)
+    catch(std::out_of_range)
+    {}
+    catch(toml::type_error)
     {}
 
     try
@@ -136,7 +159,9 @@ void Configuration::fill_configuration()
       for (auto iu = error.begin(); iu != error.end(); ++iu)
         one.insert_to_error(iu->at(0), iu->at(1));
     }
-    catch(const std::exception& e)
+    catch(std::out_of_range)
+    {}
+    catch(toml::type_error)
     {}
 
     try
@@ -146,11 +171,14 @@ void Configuration::fill_configuration()
       for (auto iu = error.begin(); iu != error.end(); ++iu)
         one.insert_to_proxy_pass(iu->at(0), iu->at(1));
     }
-    catch(const std::exception& e)
+    catch(std::out_of_range)
+    {}
+    catch(toml::type_error)
     {}
 
     list_server_.push_back(one);
   }
+  return 0;
 }
 
 void Configuration::print()
