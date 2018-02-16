@@ -144,3 +144,8 @@ void ServerConfig::update_cgi_env(Request& request)
 {
     request = request;
 }
+
+std::string& ServerConfig::get_server_name()
+{
+	return server_name_;
+}

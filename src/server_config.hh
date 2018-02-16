@@ -50,7 +50,7 @@ public:
   void insert_to_proxy_pass(std::string& a, std::string& b);
   /* Print this server configuration */
   void print();
-
+  std::string& get_server_name();
   bool is_cgi(Request& request);
   int process_cgi(Request& request, std::string rep_begin);
   void cancel(int fd);
