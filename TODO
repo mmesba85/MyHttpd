@@ -10,3 +10,5 @@ These are the steps for the myHttpd project:
         - Autotools                 [DONE]
         - Final main                [TODO]
         - CGI                       [STARTED]
+            - environment script    [STARTED]
+            - user script           [STARTED]
