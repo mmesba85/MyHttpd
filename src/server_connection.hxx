@@ -20,7 +20,6 @@ ServerConnection::ServerConnection(ServerConfig& server)
 ServerConnection::~ServerConnection()
 {
   close(socket_);
- // th_pool_->destroy();
 }
 
 bool ServerConnection::set_connection(struct epoll_event& event, 
@@ -69,11 +68,6 @@ int ServerConnection::get_socket() const
 {
   return socket_;
 }
-
-/*ThreadPool* ServerConnection::get_pool()
-{
-  return th_pool_;
-}*/
 
 ServerConfig& ServerConnection::get_config()
 {
