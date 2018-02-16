@@ -18,6 +18,12 @@ std::string& Request::get_url()
     return url_;
 }
 
+std::string& get_host()
+{
+  return host_;
+}
+
+
 bool Request::is_connected()
 {
     return connected_;
@@ -67,13 +73,13 @@ bool Request::not_found(const ServerConfig& config) const
 std::string get_method(std::string request)
 {
     std::istringstream f(request);
-    std::string s;    
+    std::string s;
     getline(f, s);
     std::istringstream g(s);
     std::string res;
     getline(g, res, ' ');
     return res;
-} 
+}
 
 bool check_request_line(std::string line)
 {
@@ -96,7 +102,7 @@ bool check_request(std::string request)
         return false;
 
     std::istringstream f(request);
-    std::string s;    
+    std::string s;
     getline(f, s);
 
     if(s.at(s.length()-1) != '\r')
@@ -131,15 +137,15 @@ bool check_request(std::string request)
 
         if(is_end == 1)
             return false;
-        
+
         /* on decoupe la ligne en champs */
         while(getline(g, aux, ' '))
             strings.push_back(aux);
 
-        /* si l'argument du head connection est different 
+        /* si l'argument du head connection est different
            de close ou de keep-alive alors erreur
            */
-        if(strings[0].compare("Connection:") == 0 && 
+        if(strings[0].compare("Connection:") == 0 &&
                 strings[1].compare("close") != 0 &&
                 strings[1].compare("Keep-Alive") != 0)
         {
