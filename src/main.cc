@@ -40,7 +40,7 @@ void communicate(int fd, ServerConfig config, std::ofstream& log)
   if(res == 0)
     return;
 
-  std::cout << "request: \n" << buf << std::endl;
+  //std::cout << "request: \n" << buf << std::endl;
 
   if (res == -1)
   {
@@ -49,7 +49,7 @@ void communicate(int fd, ServerConfig config, std::ofstream& log)
   }
 
   bool is_valid = check_request(buf);
-  std::cout << "is valid : " << is_valid << std::endl;
+  //std::cout << "is valid : " << is_valid << std::endl;
   std::string response;
   if(!is_valid) //syntax error
   {
@@ -155,7 +155,7 @@ int main_loop(std::vector<ServerConnection> list_c, std::ofstream& log)
             {
               while((*it).set_connection(*it_, epollfd))
               {
-                std::cout << "accept " << std::endl;
+              //  std::cout << "accept " << std::endl;
                 aux = (*it).get_config();
               }
             }

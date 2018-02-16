@@ -39,7 +39,7 @@ std::string Response::build_response()
   ss << version_ << " " << status_code_ << " " << reason_phrase_ << "\r\n";
   ss << "Date: " << get_date() << " GMT" << "\r\n";
   ss << "Content-Length: ";
-  std::cout << "response: " << ss.str() << std::endl;
+//  std::cout << "response: " << ss.str() << std::endl;
   return ss.str();
 }
 
@@ -93,9 +93,11 @@ int Response::get_file_dscr(const ServerConfig& config, const std::string& file_
   }
   if(file_fd == -1)
   {
-    close(file_fd);
+    return 0;
+   /* close(file_fd);
     std::error_code ec(errno, std::generic_category());
-    throw std::system_error(ec, "Fail open ressource"); 
+    throw std::system_error(ec, "Fail open ressource"); */
+
   }
   return file_fd;
 }
