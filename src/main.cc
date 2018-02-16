@@ -31,7 +31,7 @@ bool loop_handler = true;
 ** that would do all the other checks and return the right
 ** response
 */
-void communicate(int fd, ServerConfig config)
+void communicate(int fd, ServerConfig config, std::ofstream& log)
 {
   char buf[max_request_len];
   auto res = read(fd, buf, max_request_len);
@@ -67,6 +67,8 @@ void communicate(int fd, ServerConfig config)
       getpeername(fd, (struct sockaddr *)&addr, &addr_size);
       std::string ip = inet_ntoa(addr.sin_addr);
       GETRequest rq(buf, ip);
+      log << "[" << config.get_server_name() << "] ";
+      log << "GET " << rq.get_version() << " " << rq.get_url() << '\n';
       std::string version = rq.get_version();
       Response rp(version);
       rp.process_response(rq, config, fd);
@@ -97,7 +99,7 @@ bool is_server_socket(std::vector<ServerConnection>& s,
   ** the thread call the communication method that will process
   ** the request
   */
-int main_loop(std::vector<ServerConnection> list_c)
+int main_loop(std::vector<ServerConnection> list_c, std::ofstream& log)
 {
   for(auto it = list_c.begin(); it != list_c.end(); ++it)
   {
@@ -162,9 +164,9 @@ int main_loop(std::vector<ServerConnection> list_c)
       else
       {
         auto dscr = events[i].data.fd;
-        communicate(dscr, aux);
-        //ThreadPool th(5, true);
-        //th.add_task(std::bind(communicate, dscr, aux));
+        communicate(dscr, aux, log);
+        //ThreadPool th;
+        //th.add_task(std::bind(communicate, dscr, aux, log));
         //th.start();
       } 
     }
@@ -214,7 +216,6 @@ void sig_handler(int sig)
   if(sig == SIGINT)
     std::cout << "\n Connexion closed, process terminated." << std::endl;
   loop_handler = false;
-  exit(1);
 }
 
 int main(int argc, char* argv[])
@@ -257,6 +258,8 @@ int main(int argc, char* argv[])
           list_connection.push_back(s);
         }
    
+        std::ofstream log;
+        log.open(conf.get_log_file());
         int size_list = list_connection.size();
         int i = 0;
         while(i < size_list)
@@ -270,7 +273,8 @@ int main(int argc, char* argv[])
           i++;
         }
         signal(SIGINT, &sig_handler);
-        return main_loop(list_connection);
+        main_loop(list_connection, log);
+        log.close();
       }
       catch(std::exception& e)
       {
