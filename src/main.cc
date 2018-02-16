@@ -13,6 +13,7 @@
 #include "response.hh"
 #include "get_request.hh"
 #include "configuration.hh"
+#include "threadpool/thread-pool.hh"
 
 
 
@@ -61,7 +62,11 @@ void communicate(int fd, ServerConfig config)
     std::string method = get_method(buf);
     if(method.compare("GET") == 0)
     {
-      GETRequest rq(buf);
+      struct sockaddr_in addr;
+      socklen_t addr_size = sizeof(struct sockaddr_in);
+      getpeername(fd, (struct sockaddr *)&addr, &addr_size);
+      std::string ip = inet_ntoa(addr.sin_addr);
+      GETRequest rq(buf, ip);
       std::string version = rq.get_version();
       Response rp(version);
       rp.process_response(rq, config, fd);
@@ -158,8 +163,9 @@ int main_loop(std::vector<ServerConnection> list_c)
       {
         auto dscr = events[i].data.fd;
         communicate(dscr, aux);
-        //s.get_pool().add_task(std::bind(communicate, dscr, s.get_config()));
-        //s.get_pool().start();
+        //ThreadPool th(5, true);
+        //th.add_task(std::bind(communicate, dscr, aux));
+        //th.start();
       } 
     }
   }
@@ -203,55 +209,74 @@ int build_socket(int port, std::string& ip_s, int sock)
 }
 
 
-void end(int sig)
+void sig_handler(int sig)
 {
-  std::cout << "\nend "<<  sig << '\n';
+  if(sig == SIGINT)
+    std::cout << "\n Connexion closed, process terminated." << std::endl;
   loop_handler = false;
+  exit(1);
 }
 
 int main(int argc, char* argv[])
 {
   if(argc > 1)
   {
-    Configuration conf(argv[1]);
-    try
+    std::string s(argv[1]);
+    if(s.compare("--dry-run") == 0 && argc == 3)
     {
-      conf.fill_configuration();
-    }
-    catch(std::exception)
-    {
-      return 2;
+      Configuration conf(argv[2]);
+      try
+      {
+        conf.fill_configuration();
+        conf.print();
+        return 0;
+      }
+      catch(std::exception)
+      {
+        return 2;
+      }
     }  
-    
-    std::vector<ServerConnection> list_connection;
-    std::vector<ServerConfig> list_config = conf.get_list();
-    for(auto it = list_config.begin(); it != list_config.end(); it++)
+    else
     {
-      ServerConnection s(*it);
-      list_connection.push_back(s);
-    }
+      Configuration conf(argv[1]);
+      try
+      {
+        conf.fill_configuration();
+      }
+      catch(std::exception)
+      {
+        return 2;
+      }
+      try
+      {
+        std::vector<ServerConnection> list_connection;
+        std::vector<ServerConfig> list_config = conf.get_list();
+        for(auto it = list_config.begin(); it != list_config.end(); it++)
+        {
+          ServerConnection s(*it);
+          list_connection.push_back(s);
+        }
    
-    int size_list = list_connection.size();
-    int i = 0;
-    while(i < size_list)
-    {
-      int socke = socket(AF_INET, SOCK_STREAM, 0);
-      std::string::size_type sz;
-      int port = std::stoi(list_connection[i].get_config().get_port(), &sz);
-      std::string ip = list_connection[i].get_config().get_ip();
-      int sock = build_socket(port, ip, socke);
-      list_connection[i].set_socket(sock);
-      i++;
-    }
-
-    signal(SIGINT, &end);
-    try
-    {
-      return main_loop(list_connection);
-    }
-    catch(std::system_error&)
-    {
-      return 1;
+        int size_list = list_connection.size();
+        int i = 0;
+        while(i < size_list)
+        {
+          int socke = socket(AF_INET, SOCK_STREAM, 0);
+          std::string::size_type sz;
+          int port = std::stoi(list_connection[i].get_config().get_port(), &sz);
+          std::string ip = list_connection[i].get_config().get_ip();
+          int sock = build_socket(port, ip, socke);
+          list_connection[i].set_socket(sock);
+          i++;
+        }
+        signal(SIGINT, &sig_handler);
+        return main_loop(list_connection);
+      }
+      catch(std::exception& e)
+      {
+        std::cout << e.what() << std::endl;
+        return 1;
+      }
     }
   }
   return 0;
