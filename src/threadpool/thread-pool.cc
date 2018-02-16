@@ -1,5 +1,9 @@
 #include "thread-pool.hh"
 
+ThreadPool::ThreadPool()
+    : ThreadPool(DEFAULT_MAX_THREADS, true)
+{}
+
 ThreadPool::ThreadPool(unsigned nb_max_threads, bool start_now)
 {
     if (nb_max_threads == 0)
@@ -53,6 +57,12 @@ void ThreadPool::destroy()
     threads_.clear();
     state = State::STOPPED;
     cv_.notify_all();
+}
+
+ThreadPool::~ThreadPool()
+{
+    sync();
+    destroy();
 }
 
 void ThreadPool::sync()
