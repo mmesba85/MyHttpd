@@ -1,8 +1,9 @@
 #include "response.hh" 
 #include "get_request.hh"
 
-GETRequest::GETRequest(std::string request)
+GETRequest::GETRequest(std::string request, std::string& ip)
 {
+  client_ip_ = ip;
   std::vector<std::string> first_line;
   std::istringstream f(request);
   std::string s;    

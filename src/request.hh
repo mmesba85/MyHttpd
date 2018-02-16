@@ -37,13 +37,14 @@ class Request
     static bool check_client_request(std::string request);
     static std::string get_method(std::string& request);
     virtual std::string process_request(Response& rp, const ServerConfig& config) = 0;
-
+    std::string& get_client_ip();
     //for  tests purposes
     void init(std::string&& url, std::string&& version, std::string&& host, bool connected);
   protected:
     std::string url_;
     std::string version_;
     std::string host_;
+    std::string client_ip_;
     bool connected_;
 };
 
