@@ -32,7 +32,7 @@ class Request
 
     std::string& get_version();
     std::string& get_url();
-    std::string& get_host()
+    std::string& get_host();
     bool is_connected();
     static bool check_request_line(std::string& line);
     static bool check_client_request(std::string request);
