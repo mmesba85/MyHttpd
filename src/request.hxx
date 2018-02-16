@@ -8,6 +8,11 @@
 
 #include <regex>
 
+std::string& Request::get_client_ip()
+{
+  return client_ip_;
+}
+
 std::string& Request::get_version()
 {
     return version_;

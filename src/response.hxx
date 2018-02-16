@@ -82,7 +82,14 @@ int Response::get_file_dscr(const ServerConfig& config, const std::string& file_
     std::map<std::string, std::string>::iterator it;
     it = map.find(status_code_);
     if(it != map.end())
-      file_fd = open(it->second.c_str(), O_RDONLY);
+    {
+      std::string path = config.get_root_dir();
+      int len = path.size();
+      if(path[len-1] != '/')
+        path.append("/");
+      path.append(it->second.c_str());
+      file_fd = open(path.c_str(), O_RDONLY);
+    }
   }
   if(file_fd == -1)
   {
