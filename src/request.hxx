@@ -23,7 +23,7 @@ std::string& Request::get_url()
     return url_;
 }
 
-std::string& get_host()
+std::string& Request::get_host()
 {
   return host_;
 }
