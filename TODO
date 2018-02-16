@@ -7,6 +7,6 @@ These are the steps for the myHttpd project:
         - GET method                [DONE]
         - Test GET                  [TODO]
         - Print Log                 [TODO]
-        - Autotools                 [TODO]
+        - Autotools                 [DONE]
         - Final main                [TODO]
         - CGI                       [STARTED]
