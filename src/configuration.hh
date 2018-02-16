@@ -19,7 +19,7 @@ public:
   ~Configuration();
 
   /* Read the stream_ and fill the configuration */
-  void fill_configuration();
+  int fill_configuration();
 
   /* Getter for the list_server */
   std::vector<ServerConfig>& get_list();
