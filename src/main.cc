@@ -165,8 +165,7 @@ int main_loop(std::vector<ServerConnection> list_c, std::ofstream& log)
       else
       {
         auto dscr = events[i].data.fd;
-        th.add_task(std::bind(communicate, dscr, aux, log));
-
+        th.add_task(std::bind(communicate, dscr, aux, std::ref(log)));
       } 
     }
   }
