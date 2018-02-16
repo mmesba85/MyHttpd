@@ -169,3 +169,8 @@ std::vector<ServerConfig>& Configuration::get_list()
 {
   return list_server_;
 }
+
+std::string& Configuration::get_log_file()
+{
+  return log_file_;
+}

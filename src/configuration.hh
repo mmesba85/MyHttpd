@@ -20,7 +20,7 @@ public:
 
   /* Read the stream_ and fill the configuration */
   void fill_configuration();
-
+  std::string& get_log_file();
   /* Getter for the list_server */
   std::vector<ServerConfig>& get_list();
 
