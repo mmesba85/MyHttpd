@@ -19,7 +19,7 @@ ServerConnection::ServerConnection(ServerConfig& server)
 
 ServerConnection::~ServerConnection()
 {
-  close(socket_);
+  //close(socket_);
 }
 
 bool ServerConnection::set_connection(struct epoll_event& event, 
