@@ -12,6 +12,8 @@
 #include "request.hh"
 #include "response.hh"
 #include "get_request.hh"
+#include "configuration.hh"
+
 
 
 
@@ -64,9 +66,25 @@ void communicate(int fd, ServerConfig config)
       Response rp(version);
       rp.process_response(rq, config, fd);
     } 
-  }
- // close(fd);  
+  } 
 }
+
+bool is_server_socket(std::vector<ServerConnection>& s, 
+                      std::vector<struct epoll_event>& ev, int fd)
+{
+  for(auto it = s.begin(); it != s.end(); ++it)
+  {
+    for(auto it_ = ev.begin(); it_ != ev.end(); ++it_)
+    {
+      if ((*it).get_socket() == fd)
+      {
+        return true;
+      }
+    }
+  }
+  return false; 
+}
+
 
 /* main server connection loop
   ** accept tcp connection
@@ -74,11 +92,13 @@ void communicate(int fd, ServerConfig config)
   ** the thread call the communication method that will process
   ** the request
   */
-int main_loop(ServerConnection& s)
+int main_loop(std::vector<ServerConnection> list_c)
 {
-  if(listen(s.get_socket(), max_listen) < 0)
-    return -1;
-
+  for(auto it = list_c.begin(); it != list_c.end(); ++it)
+  {
+    if(listen((*it).get_socket(), max_listen) < 0)
+      return -1;
+  }
   int epollfd = epoll_create1(0);
   if (epollfd == -1)
   {
@@ -87,19 +107,25 @@ int main_loop(ServerConnection& s)
     return 1;
   }
   
-  struct epoll_event event;
-  event.data.fd = s.get_socket();
-  event.events = EPOLLIN | EPOLLET;
-  if (epoll_ctl(epollfd, EPOLL_CTL_ADD, s.get_socket(), &event) == -1)
-  if (epollfd == -1)
+  std::vector<struct epoll_event> ev;
+  for(auto it = list_c.begin(); it != list_c.end(); ++it)
   {
-    std::error_code ec(errno, std::generic_category());
-    throw std::system_error(ec, "epoll_ctl failed.");
-    return 1;
-  }
-
+    struct epoll_event event;
+    event.data.fd = (*it).get_socket();
+    event.events = EPOLLIN | EPOLLET;
+    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, (*it).get_socket(), &event) == -1)
+    {  
+      if (epollfd == -1)
+      {
+        std::error_code ec(errno, std::generic_category());
+        throw std::system_error(ec, "epoll_ctl failed.");
+        return 1;
+      }
+    }
+    ev.push_back(event);
+  } 
+  ServerConfig aux;
   std::array<struct epoll_event, max_events> events;
-
   while (loop_handler)
   {
     auto n = epoll_wait(epollfd, events.data(), max_events, -1);
@@ -109,29 +135,73 @@ int main_loop(ServerConnection& s)
           events[i].events & EPOLLHUP ||
           !(events[i].events & EPOLLIN)) 
       {
-       // std::error_code ec(errno, std::generic_category());
-       // throw std::system_error(ec, "event error.");
         close(events[i].data.fd);
       }
-      else if (s.get_socket() == events[i].data.fd)
+      else if(is_server_socket(list_c, ev, events[i].data.fd))
       {
-        while (s.set_connection(event, epollfd))
+        for(auto it = list_c.begin(); it != list_c.end(); ++it)
         {
-          std::cout << "accept" << '\n';
+          for(auto it_ = ev.begin(); it_ != ev.end(); ++it_)
+          {
+            if ((*it).get_socket() == events[i].data.fd)
+            {
+              while((*it).set_connection(*it_, epollfd))
+              {
+                std::cout << "accept " << std::endl;
+                aux = (*it).get_config();
+              }
+            }
+          }
         }
-        
       }
-      else 
+      else
       {
         auto dscr = events[i].data.fd;
-        communicate(dscr, s.get_config());
+        communicate(dscr, aux);
         //s.get_pool().add_task(std::bind(communicate, dscr, s.get_config()));
         //s.get_pool().start();
-      }
+      } 
     }
   }
-  return 0;
+  return 1;
 }
+
+int build_socket(int port, std::string& ip_s, int sock)
+{
+  if(sock < 0)
+  {
+    std::error_code ec(errno, std::generic_category());
+    throw std::system_error(ec, "error socket creation.");  
+  }
+
+  struct sockaddr_in sin;
+  sin.sin_family = AF_INET;
+  sin.sin_port = htons(port);
+  const char* ip = ip_s.c_str();
+  sin.sin_addr.s_addr = inet_addr(ip);
+  
+  int reuse = 1;
+  if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (
+    const char*)&reuse, sizeof(reuse)) < 0)
+  {
+    std::error_code ec(errno, std::generic_category());
+    throw std::system_error(ec, "setsockopt(SO_REUSEPORT) failed.");
+  }
+
+  if(bind(sock, (struct sockaddr *)&sin, sizeof sin) == -1)
+  {
+    std::error_code ec(errno, std::generic_category());
+    throw std::system_error(ec, "bind failed.");
+  }
+
+  if(fcntl(sock, F_SETFL, O_NONBLOCK) < 0)
+  {
+    std::error_code ec(errno, std::generic_category());
+    throw std::system_error(ec, "fcntl failed.");
+  }  
+  return sock;  
+}
+
 
 void end(int sig)
 {
@@ -139,12 +209,50 @@ void end(int sig)
   loop_handler = false;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
-  signal(SIGINT, &end);
-  ServerConnection s;
-  int loop = main_loop(s);
-  if(loop != 0)
-    return loop;
-	return 0;
+  if(argc > 1)
+  {
+    Configuration conf(argv[1]);
+    try
+    {
+      conf.fill_configuration();
+    }
+    catch(std::exception)
+    {
+      return 2;
+    }  
+    
+    std::vector<ServerConnection> list_connection;
+    std::vector<ServerConfig> list_config = conf.get_list();
+    for(auto it = list_config.begin(); it != list_config.end(); it++)
+    {
+      ServerConnection s(*it);
+      list_connection.push_back(s);
+    }
+   
+    int size_list = list_connection.size();
+    int i = 0;
+    while(i < size_list)
+    {
+      int socke = socket(AF_INET, SOCK_STREAM, 0);
+      std::string::size_type sz;
+      int port = std::stoi(list_connection[i].get_config().get_port(), &sz);
+      std::string ip = list_connection[i].get_config().get_ip();
+      int sock = build_socket(port, ip, socke);
+      list_connection[i].set_socket(sock);
+      i++;
+    }
+
+    signal(SIGINT, &end);
+    try
+    {
+      return main_loop(list_connection);
+    }
+    catch(std::system_error&)
+    {
+      return 1;
+    }
+  }
+  return 0;
 }
