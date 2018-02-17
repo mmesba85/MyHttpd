@@ -8,6 +8,7 @@
 #include <map>
 #include <cstdio>
 #include <mutex>
+#include <memory>
 
 #define _SVID_SOURCE
 
@@ -23,8 +24,8 @@ private:
   std::string ip_;
   std::string root_dir_;
   
+  std::shared_ptr<std::mutex> pipe_lock;
   std::map<int, FILE*> pipes;
-  //std::mutex pipe_lock;
 
   std::map<std::string, std::string> configurations_;
   std::map<std::string, std::string> error_;
