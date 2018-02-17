@@ -45,34 +45,13 @@ int Configuration::fill_configuration()
     {
       auto server_name =  toml::get<std::string>(it->at("server_name"));
       one.set_server_name(server_name);
-    }
-    catch(toml::type_error)
-    {
-      exit(2);
-    }
 
-    try
-    {
       auto ip =  toml::get<std::string>(it->at("ip"));
       one.set_ip(ip);
-    }
-    catch(toml::type_error)
-    {
-      exit(2);
-    }
 
-    try
-    {
       auto port =  toml::get<std::string>(it->at("port"));
       one.set_port(port);
-    }
-    catch(toml::type_error)
-    {
-      exit(2);
-    }
 
-    try
-    {
       auto root_dir =  toml::get<std::string>(it->at("root_dir"));
       one.set_root_dir(root_dir);
     }
