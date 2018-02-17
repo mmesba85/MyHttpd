@@ -23,6 +23,7 @@ class Executor
                  std::queue<std::function<void()>>& queue);
         void start();
         void stop();
+        void print() const;
         bool is_waiting() const;
     private:
         void run();
