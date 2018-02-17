@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS = foreign
 
 
-CXXFLAGS=-std=c++17 -Wall -Wextra -Werror -pedantic -g
+CXXFLAGS=-std=c++17 -Wall -Wextra -Werror -pedantic
 LDFLAGS=-lpthread
 VPATH=src:src/threadpool
 
