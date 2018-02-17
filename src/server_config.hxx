@@ -6,7 +6,8 @@ ServerConfig::ServerConfig()
 
 ServerConfig::ServerConfig(std::string name, std::string port, std::string ip,
   std::string root_dir)
-    : server_name_(name), port_(port), ip_(ip), root_dir_(root_dir)
+    : server_name_(name), port_(port), ip_(ip), root_dir_(root_dir), pipe_lock(
+            new std::mutex())
 {}
 
 ServerConfig::~ServerConfig()
@@ -280,7 +281,7 @@ void ServerConfig::parse_cgi_headers(std::map<std::string, std::string>& map, FI
 
 int ServerConfig::process_cgi(Request& request, std::string& rep_begin)
 {
-    //std::unique_lock<std::mutex> lock(pipe_lock);
+    std::unique_lock<std::mutex> lock(*pipe_lock);
     update_cgi_env(request); // update environment
 
     // run the script
@@ -290,14 +291,14 @@ int ServerConfig::process_cgi(Request& request, std::string& rep_begin)
 
     int fd = fileno(file);
     pipes[fd] = file;
-    //lock.unlock();
+    lock.unlock();
 
     std::map<std::string, std::string> headers;
     parse_cgi_headers(headers, file);
     if (!headers.size())
     {
         pclose(file);
-        //lock.lock();
+        lock.lock();
         pipes.erase(fd);
         return 0;
     }
@@ -329,10 +330,10 @@ void ServerConfig::fill_with_header(std::map<std::string, std::string>&
 
 void ServerConfig::cancel(int fd)
 {
-    //std::unique_lock<std::mutex> lock(pipe_lock);
+    std::unique_lock<std::mutex> lock(*pipe_lock);
     FILE* file = pipes[fd];
     pipes.erase(fd);
-    //lock.unlock();
+    lock.unlock();
     pclose(file);
 }
 
