@@ -1,19 +1,21 @@
 #include "response.hh" 
 #include "get_request.hh"
 
-GETRequest::GETRequest(std::string request, std::string& ip)
+GETRequest::GETRequest(std::string& request, std::string& ip, 
+  const ServerConfig& config)
 {
+  type_ = "GET";
   client_ip_ = ip;
   std::vector<std::string> first_line;
   std::istringstream f(request);
   std::string s;    
   getline(f, s);
   s.erase(s.length()-1);
+  url_ = s;
   std::istringstream g(s);
   std::string aux;
   while(getline(g, aux, ' '))
     first_line.push_back(aux);
-  url_ = first_line[1];
   version_ = first_line[2];
   host_ = "";
   if(version_.compare("HTTP/1.1") == 0)
@@ -40,13 +42,27 @@ GETRequest::GETRequest(std::string request, std::string& ip)
         connected_ = true;
     }
   }
+  std::string pattern("");
+  // build the pattern
+  pattern.append("((/[a-zA-Z0-9-_=\\.#&]*)+)"); // the resource path.
+  pattern.append("?([a-zA-Z0-9-_=\\./\\+#]&)*"); // the query
+  std::smatch result;
+  std::regex regex(pattern);
+  if (std::regex_match(first_line[1], result, regex))
+  {
+    std::string path(config.get_root_dir());
+    path.append(result[1]);
+    if (path.at(path.size() - 1) == '/')
+      path.append("index.html");
+    path_ = path;
+  }
 }
 
-std::string GETRequest::process_request(Response& rp, const ServerConfig& config)
+std::string GETRequest::process_request(Response& rp)
 {
-  if(not_found(config))
+  if(not_found())
     rp.set_code("404");
-  else if(forbidden(config))
+  else if(forbidden())
     rp.set_code("403");
   else if(bad_method())
     rp.set_code("405");
