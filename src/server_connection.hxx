@@ -38,8 +38,6 @@ bool ServerConnection::set_connection(struct epoll_event& event,
     else
     {
       close(fd);
-     /* std::error_code ec(errno, std::generic_category());
-      throw std::system_error(ec, "No connections are present to be accepted."); */
       return false;   
     }
   }

@@ -44,10 +44,10 @@ bool Request::is_connected()
     return connected_;
 }
 
-/* a voir */
 bool Request::bad_method() const
 {
-  
+  if(type_.compare("GET") != 0)
+    return true;
   return false;
 }
 
