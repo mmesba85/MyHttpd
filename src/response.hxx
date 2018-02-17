@@ -38,7 +38,7 @@ std::string Response::build_response()
   std::stringstream ss;
   ss << version_ << " " << status_code_ << " " << reason_phrase_ << "\r\n";
   ss << "Date: " << get_date() << " GMT" << "\r\n";
-  ss << "Content-Length: ";
+  //ss << "Content-Length: ";
 //  std::cout << "response: " << ss.str() << std::endl;
   return ss.str();
 }
@@ -74,10 +74,10 @@ std::string& Response::get_code()
 int Response::get_file_dscr(const ServerConfig& config, const std::string& file_name)
 {
   std::map<std::string, std::string> map = config.get_error();
-  int file_fd = 0;
+  int file_fd = -1;
   if(status_code_.compare("200") == 0 && file_name.compare("") != 0)
     file_fd = open(file_name.c_str(), O_RDONLY);
-  if(!map.empty())
+  else if(!map.empty())
   {
     std::map<std::string, std::string>::iterator it;
     it = map.find(status_code_);
@@ -91,83 +91,90 @@ int Response::get_file_dscr(const ServerConfig& config, const std::string& file_
       file_fd = open(path.c_str(), O_RDONLY);
     }
   }
-  if(file_fd == -1)
-  {
-    return 0;
-   /* close(file_fd);
-    std::error_code ec(errno, std::generic_category());
-    throw std::system_error(ec, "Fail open ressource"); */
-
-  }
   return file_fd;
 }
 
-int Response::process_response(const ServerConfig& config, int fd)
+int Response::process_response(ServerConfig& config, int fd)
 {
   std::string response = build_response();
   int res = 0;
   int file_fd = get_file_dscr(config, "");
-  if(file_fd == 0)
+  if(file_fd == -1)
   {
-    response.append("0\r\n\r\n");
+    response.append("Content-Length: 0\r\n\r\n");
     res = send(fd, response.c_str(), response.length(), MSG_MORE);
     if(res == -1)
     {
-      close(file_fd);
       std::error_code ec(errno, std::generic_category());
       throw std::system_error(ec, "Fail sendfile.");
     }
     return 0; 
   }
-  return send_response(fd, file_fd, response);
+  return send_response(fd, file_fd, config, response, false);
 }
 
-int Response::process_response(Request& rq, const ServerConfig& config, int fd)
+int Response::process_response(Request& rq, ServerConfig& config, int fd)
 {
   std::string response = rq.process_request(*this);
-  int res = 0;
-  int file_fd = get_file_dscr(config, rq.get_path().c_str());
-  if(file_fd == 0)
+  bool cgi = config.is_cgi(rq);
+  int file_fd;
+  if (cgi)
+    file_fd = config.process_cgi(rq, response);
+  else
+     file_fd = get_file_dscr(config, rq.get_path().c_str());
+
+  if(file_fd == -1)
   {
-    response.append("0\r\n\r\n");
-    res = send(fd, response.c_str(), response.length(), MSG_MORE);
+    response.append("Content-Length: 0\r\n\r\n");
+    int res = send(fd, response.c_str(), response.length(), MSG_MORE);
     if(res == -1)
     {
-      close(file_fd);
       std::error_code ec(errno, std::generic_category());
       throw std::system_error(ec, "Fail sendfile.");
     }
+
     return 0; 
   }
-  send_response(fd, file_fd, response);
+  send_response(fd, file_fd, config, response, cgi);
   if(!rq.is_connected())
     close(fd);
   return 0;
 }
 
-int Response::send_response(int fd, int file_fd, std::string& response)
+int Response::send_response(int fd, int file_fd, ServerConfig& config,
+        std::string& response, bool cgi)
 {
-  auto file_len = lseek(file_fd, 0, SEEK_END);
-  lseek(file_fd, 0, SEEK_SET);
-  response.append(std::to_string(file_len));
-  response.append("\r\n\r\n");
+  off_t file_len = 0;
+  if (!cgi)
+  {
+    file_len = lseek(file_fd, 0, SEEK_END);
+    lseek(file_fd, 0, SEEK_SET);
+    response.append(std::to_string(file_len));
+    response.append("\r\n\r\n");
+  }
 
   int res = send(fd, response.c_str(), response.length(), MSG_MORE);
   if(res == -1)
   {
-    close(file_fd);
+    if (!cgi)
+        close(file_fd);
+    else
+        config.cancel(file_fd);
     std::error_code ec(errno, std::generic_category());
     throw std::system_error(ec, "Fail sendfile.");
   }
 
-  res = sendfile(fd, file_fd, 0, file_len);
-  if(res == -1)
+  if (!cgi)
   {
+    res = sendfile(fd, file_fd, 0, file_len);
+    if(res == -1)
+    {
+      close(file_fd);
+      std::error_code ec(errno, std::generic_category());
+      throw std::system_error(ec, "Fail sendfile.");
+    }
     close(file_fd);
-    std::error_code ec(errno, std::generic_category());
-    throw std::system_error(ec, "Fail sendfile.");
-  }
-
-  close(file_fd);
+  }else
+      config.cancel(file_fd);
   return 0; 
 }

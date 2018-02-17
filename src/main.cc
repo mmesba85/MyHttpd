@@ -87,7 +87,7 @@ std::pair<ServerConnection, struct epoll_event> get_server_infos(std::vector<Ser
     {
       if ((*it).get_socket() == fd)
       {
-        res = std::make_pair(*it, *it_);
+        return std::make_pair(*it, *it_);
       }
     }
   }

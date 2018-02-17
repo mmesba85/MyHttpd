@@ -6,6 +6,10 @@
 #include <string>
 #include <sstream>
 #include <map>
+#include <cstdio>
+#include <mutex>
+
+#define _SVID_SOURCE
 
 #include "toml/toml.hpp"
 
@@ -19,19 +23,35 @@ private:
   std::string ip_;
   std::string root_dir_;
   
-  std::string env_path_;
-  std::map<int, FILE> pipes;
+  std::map<int, FILE*> pipes;
+  std::mutex pipe_lock;
 
   std::map<std::string, std::string> configurations_;
   std::map<std::string, std::string> error_;
   std::map<std::string, std::string> proxy_pass_;
   
-  void update_cgi_env(Request& request);
+  void update_cgi_env(Request& request) const;
+  /**
+  ** \brief parse the entity-header responses of the CGI script and return a map of
+  ** header fields/values
+  ** \param file the file corresponding to the CGI response
+  ** \return a map containing all hears fields/values or an empty map if no
+  ** header
+  */
+  std::map<std::string, std::string>&& parse_cgi_headers(FILE* file) const;
+
+  /**
+  ** \brief fill the string with the entity headers
+  ** \param headers the map of headers
+  ** \param into the string to fill
+  */
+  void fill_with_header(std::map<std::string, std::string>& headers,
+          std::string& into) const;
 public:
   /* Constructors */
   ServerConfig();
   ServerConfig(std::string name, std::string ip, std::string port,
-    std::string root_dir, const std::string& env_path);
+    std::string root_dir);
   virtual ~ServerConfig();
 
   /* Getter and setters */
@@ -51,8 +71,8 @@ public:
   /* Print this server configuration */
   void print();
   std::string& get_server_name();
-  bool is_cgi(Request& request);
-  int process_cgi(Request& request, std::string rep_begin);
+  bool is_cgi(Request& request) const;
+  int process_cgi(Request& request, std::string& rep_begin);
   void cancel(int fd);
 };
 

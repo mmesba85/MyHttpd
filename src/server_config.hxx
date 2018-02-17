@@ -5,9 +5,8 @@ ServerConfig::ServerConfig()
 {}
 
 ServerConfig::ServerConfig(std::string name, std::string port, std::string ip,
-  std::string root_dir, const std::string& env_path)
-    : server_name_(name), port_(port), ip_(ip), root_dir_(root_dir), env_path_(
-            env_path)
+  std::string root_dir)
+    : server_name_(name), port_(port), ip_(ip), root_dir_(root_dir)
 {}
 
 ServerConfig::~ServerConfig()
@@ -152,7 +151,7 @@ std::string get_current_path()
   return "";
 }
 
-bool ServerConfig::is_cgi(Request& request)
+bool ServerConfig::is_cgi(Request& request) const
 {
   std::string url = request.get_url();
 
@@ -176,16 +175,148 @@ bool ServerConfig::is_cgi(Request& request)
 
 ///////// CGI PART
 
-int ServerConfig::process_cgi(Request& request, std::string rep_begin)
+std::map<std::string, std::string>&& parse_cgi_headers(FILE* file)
 {
-    request = request;
-    rep_begin = rep_begin;
-    return 0;
+    std::map<std::string, std::string> map;
+    if (!file)
+        return std::move(map);
+    constexpr int NB_BYTES = 100;
+    char buffer[NB_BYTES + 1] = {'\0'};
+    size_t cpt = 0;
+    size_t res = 0;
+
+    std::string builder;
+    builder.reserve(101);
+    size_t last = 0;
+    size_t point = 0;
+    while (true)
+    {
+        // read the file
+        cpt = res = 0;
+        while (cpt < NB_BYTES && (res = fread(buffer + cpt, sizeof (char),
+                        NB_BYTES - cpt, file)) > 0)
+            cpt += res;
+        buffer[cpt] = '\0';
+        if (feof(file)) // if  eof, return the data readed
+        {
+            builder.append(buffer);
+            map["myhttpd_exceed"] = builder;
+            break;
+        }
+        else if (ferror(file)) // if  error, return error
+        {
+            map.clear();
+            break;
+        }
+        else
+        {
+            // else parse the buffer
+            builder.append(buffer);
+            for (size_t max = builder.size(); last < max - 2; ++last)
+            {
+                if (!point && builder.at(last) == ':') // field detected
+                    point = last;
+                else if (point && builder.at(last) == '\r' && builder.at(last +
+                            1) == '\n' && (builder.at(last + 2) != '\t' &&
+                                builder.at(last + 2) != ' ' ))
+                { // value detected
+                    map[std::string(builder, 0, point)] = std::string(builder,
+                            point + 1, last + 1 - point);
+                    builder.erase(0, last + 2);
+                    point = 0;
+                    last = -1;
+                    max = builder.size();
+                    if (max >= 2 && builder.at(0) == '\r' && (builder.at(1) ==
+                            '\n'))
+                    { // there is no more entity-headers
+                        map["myhttpd_exceed"] = builder;
+                        builder.clear();
+                        while (true)
+                        {
+                            res = 0;
+                            cpt = 0;
+                            while (cpt < NB_BYTES && (res = fread(buffer + cpt,
+                                sizeof (char), NB_BYTES - cpt, file)) > 0)
+                                cpt += res;
+                            buffer[cpt] = '\0';
+                            builder.append(buffer);
+                            if (feof(file)) // if  eof, return the data readed
+                            {
+                                map["myhttpd_eof"] = std::move(builder);
+                                break;
+                            }
+                            else if (ferror(file)) // if  error, return error
+                            {
+                                map.clear();
+                                break;
+                            }
+                        }
+                        return std::move(map);
+                    }
+                }
+            }
+            cpt = 0;
+            res = 0;
+        }
+    }
+    return std::move(map);
+}
+
+int ServerConfig::process_cgi(Request& request, std::string& rep_begin)
+{
+    std::unique_lock<std::mutex> lock(pipe_lock);
+    update_cgi_env(request); // update environment
+
+    // run the script
+    FILE* file = popen(request.get_path().c_str(), "r");
+    if (file == NULL)
+        return 0;
+
+    int fd = fileno(file);
+    pipes[fd] = file;
+    lock.unlock();
+
+    std::map<std::string, std::string> headers = parse_cgi_headers(file);
+    if (!headers.size())
+    {
+        pclose(file);
+        lock.lock();
+        pipes.erase(fd);
+        return 0;
+    }
+    else if (headers.find("Content-Length") == headers.end())
+    {
+        headers["Content-Length"] = headers["myhttpd_exceed"].size() +
+            headers["myhttpd_eof"].size();
+    }
+    fill_with_header(headers, rep_begin);
+    headers.clear();
+    return fd;
+}
+
+void ServerConfig::fill_with_header(std::map<std::string, std::string>&
+        headers,std::string& into) const
+{
+    for (auto& it : headers)
+    {
+        if (!it.first.compare("myhttpd_exceed") ||
+                !it.first.compare("myhttpd_eof"))
+            continue;
+        into.append(it.first);
+        into.append(":");
+        into.append(it.second);
+    }
+    into.append(headers["myhttpd_exceed"]);
+    into.append(headers["myhttpd_eof"]);
 }
 
 void ServerConfig::cancel(int fd)
 {
-    ++fd;
+    std::unique_lock<std::mutex> lock(pipe_lock);
+    FILE* file = pipes[fd];
+    pipes.erase(fd);
+    lock.unlock();
+    pclose(file);
 }
 
 /**
@@ -193,20 +324,21 @@ void ServerConfig::cancel(int fd)
 ** descriptor to the output of the execution
 ** \return 0 if success, else return -1
 */
-void ServerConfig::update_cgi_env(Request& request)
+void ServerConfig::update_cgi_env(Request& request) const
 {
   std::string url = request.get_url();
 
   std::string path_info = get_path_info(url);
   setenv("PATH_INFO", path_info.c_str(), 1);
 
-  std::string path_translated = root_dir_.append(path_info);
+  std::string path_translated(root_dir_);
+  path_translated.append(path_info);
   setenv("PATH_TRANSLATED", path_translated.c_str(), 1);
 
   std::string query_string = get_query(url);
   setenv("QUERY_STRING", query_string.c_str(), 1);
 
-  std::string remote_addr = request.get_client_ip(); //TODO
+  std::string remote_addr = request.get_client_ip();
   setenv("REMOTE_ADDR", remote_addr.c_str(), 1);
 
   // std::string remote_host = request.get_host();
