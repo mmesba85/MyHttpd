@@ -31,7 +31,7 @@ bool loop_handler = true;
 ** that would do all the other checks and return the right
 ** response
 */
-void communicate(int fd, ServerConfig config, std::ofstream& log)
+void communicate(int fd, ServerConfig& config, std::ofstream& log)
 {
   char buf[max_request_len];
   auto res = read(fd, buf, max_request_len);
@@ -92,7 +92,6 @@ bool is_server_socket(std::vector<ServerConnection>& s,
   return false; 
 }
 
-
 /* main server connection loop
   ** accept tcp connection
   ** create a thread each time there is data to read
@@ -131,7 +130,7 @@ int main_loop(std::vector<ServerConnection> list_c, std::ofstream& log)
     }
     ev.push_back(event);
   } 
-  //ThreadPool th;
+  ThreadPool th;
   ServerConfig aux;
   std::array<struct epoll_event, max_events> events;
   while (loop_handler)
@@ -165,8 +164,8 @@ int main_loop(std::vector<ServerConnection> list_c, std::ofstream& log)
       else
       {
         auto dscr = events[i].data.fd;
-        //th.add_task(std::bind(communicate, dscr, aux, std::ref(log)));
-        communicate(dscr, aux, log);
+        th.add_task(std::bind(communicate, dscr, std::ref(aux), std::ref(log)));
+        //communicate(dscr, aux, log);
       } 
     }
   }
