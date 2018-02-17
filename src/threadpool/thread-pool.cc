@@ -1,4 +1,5 @@
 #include "thread-pool.hh"
+#include <iostream>
 
 ThreadPool::ThreadPool()
     : ThreadPool(DEFAULT_MAX_THREADS, true)
@@ -52,7 +53,7 @@ void ThreadPool::destroy()
 
     this->remove_all_tasks();
 
-    for (std::shared_ptr<Executor> executor : threads_)
+    for (std::shared_ptr<Executor>& executor : threads_)
         executor->stop();
     threads_.clear();
     state = State::STOPPED;
@@ -61,8 +62,11 @@ void ThreadPool::destroy()
 
 ThreadPool::~ThreadPool()
 {
+    //std::cout << "starting destroying threadpool" << std::endl;
     sync();
+    //std::cout << "after syncking and now destroying" << std::endl;
     destroy();
+    //std::cout << "after destroying" << std::endl;
 }
 
 void ThreadPool::sync()
@@ -74,14 +78,19 @@ void ThreadPool::sync()
         std::this_thread::yield();
         lock.lock();
     }
-
-    for (auto thread : threads_)
+    
+    //std::cout << "tasks are empty" << std::endl;
+    //size_t i = 0;
+    for (auto& thread : threads_)
     {
         while (!thread->is_waiting())
         {
+            thread->print();
             lock.unlock();
             std::this_thread::yield();
             lock.lock();
         }
+        //++i;
+        //std::cout << i << std::endl;
     }
 }
