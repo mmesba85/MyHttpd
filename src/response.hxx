@@ -149,6 +149,7 @@ int Response::send_response(int fd, int file_fd, ServerConfig& config,
   {
     file_len = lseek(file_fd, 0, SEEK_END);
     lseek(file_fd, 0, SEEK_SET);
+    response.append("Content-Length: ");
     response.append(std::to_string(file_len));
     response.append("\r\n\r\n");
   }
