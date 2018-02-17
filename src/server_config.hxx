@@ -118,7 +118,7 @@ std::string get_script(std::string url)
 
   std::istringstream h(tmp);
   std::string script;
-  while(getline(h, script, /))
+  while(getline(h, script, '/'))
     if(script.find('.') != std::string::npos)
       break;
   return script;
@@ -134,14 +134,25 @@ std::string get_path_info(std::string url)
       break;
   path_info = "/";
   std::string tmp;
-  getline(g, tmp, '?');
-  path_info.append(tmp);
+  getline(g, tmp, ' ');
 
+  if(tmp.find('?') != std::string::npos)
+  {
+    std::istringstream h(tmp);
+    getline(h, tmp, '?');
+  }
+
+  if(tmp.find('.') != std::string::npos)
+    return "";
+
+  path_info.append(tmp);
   return path_info;
 }
 
 std::string get_query(std::string url)
 {
+  if(url.find('?') == std::string::npos)
+    return "";
   std::istringstream g(url);
   std::string query;
   getline(g, query, '?');
@@ -336,48 +347,59 @@ void ServerConfig::update_cgi_env(Request& request) const
 
   std::string path_info = get_path_info(url);
   setenv("PATH_INFO", path_info.c_str(), 1);
+  std::cout << "path_info" << path_info << '\n';
 
   std::string path_translated(root_dir_);
   path_translated.append(path_info);
   setenv("PATH_TRANSLATED", path_translated.c_str(), 1);
+  std::cout << "path_translated" << path_translated << '\n';
 
   std::string query_string = get_query(url);
   setenv("QUERY_STRING", query_string.c_str(), 1);
 
   std::string remote_addr = request.get_client_ip();
   setenv("REMOTE_ADDR", remote_addr.c_str(), 1);
+  std::cout << "remote_addr" << remote_addr << '\n';
 
   // std::string remote_host = request.get_host();
   setenv("REMOTE_HOST", "", 1);
+  // std::cout << "query_string" << query_string << '\n';
 
   std::string request_method = method(url);
   setenv("REQUEST_METHOD", request_method.c_str(), 1);
+  std::cout << "request_method" << request_method << '\n';
 
   std::string script_name = get_script(url);
   setenv("SCRIPT_NAME", script_name.c_str(), 1);
+  std::cout << "script_name" << script_name << '\n';
 
-  // if (configurations_.find("ip") == configurations_.end())
-  //   return -1;
+  if (configurations_.find("ip") == configurations_.end())
+    std::cout << "NOT FOUND IP" << '\n';
   std::string server_name = configurations_.at("ip");
   setenv("SERVER_NAME", server_name.c_str(), 1);
+  std::cout << "server_name" << server_name << '\n';
 
-  //   // if (configurations_.find("port") == configurations_.end())
-  //   //   return -1;
+  if (configurations_.find("port") == configurations_.end())
+    std::cout << "NOT FOUND PORT" << '\n';
   std::string server_port = configurations_.at("port");
   setenv("SERVER_PORT", server_port.c_str(), 1);
+  std::cout << "server_port" << server_port << '\n';
 
   std::string server_protocol = request.get_version();
   setenv("SERVER_PROTOCOL", server_protocol.c_str(), 1);
+  std::cout << "server_protocol" << server_protocol << '\n';
 
   std::string server_software = "My";
     server_software.append(server_protocol);
   setenv("SERVER_SOFTWARE", server_software.c_str(), 1);
+  std::cout << "server_software" << server_software << '\n';
 
   std::string script_filename = get_current_path();
   script_filename.append("/");
   script_filename.append(root_dir_);
   script_filename.append(script_name);
   setenv("SCRIPT_FILENAME", script_filename.c_str(), 1);
+  std::cout << "script_filename" << script_filename << '\n';
 
   setenv("REDIRECT_STATUS", "1", 1);
 }
