@@ -8,33 +8,65 @@ class Response;
 class Request
 {
   public:
-    bool bad_method() const;
 
     /**
-    ** \brief tell if the acces to the resource is forbidden
-    ** \param the server configuration where searching the resource
-    ** \return true if forbidden, false otherwise
-    */
-    bool forbidden() const;
-    /**
-    ** \brief check if resource requested exists
-    ** \brief the server configuration to search the resource
-    ** \return true if not founded, false otherwise
-    */
-    bool not_found() const;
-
+    ** \brief Class getters for the attributs
+    **/
     std::string& get_version();
     std::string& get_url();
     std::string& get_host();
     std::string& get_type();
     std::string& get_path();
-    bool is_connected();
-    static bool check_request_line(std::string& line);
-    static bool check_client_request(std::string& request);
-    static std::string get_method(std::string& request);
-    virtual std::string process_request(Response& rp) = 0;
     std::string& get_client_ip();
+    bool is_connected();
 
+    /**
+    ** \brief check the request's method
+    ** \return true if the method is right
+    */
+    bool bad_method() const;
+
+    /**
+    ** \brief tell if the acces to the resource is forbidden
+    ** \return true if forbidden, false otherwise
+    */
+    bool forbidden() const;
+
+    /**
+    ** \brief check if resource requested exists
+    ** \brief the server configuration to search the resource
+    */
+    bool not_found() const;
+
+    /**
+    ** \brief check the client's request syntax
+    ** \param the client's request
+    ** \return true if the syntax is right
+    **/
+    static bool check_client_request(std::string& request);
+
+    /**
+    ** \brief check if the first request's line syntax is right
+    ** \param the first line
+    ** \return true if the syntax is right
+    **/
+    static bool check_request_line(std::string& line);
+    
+    /**
+    ** \brief get the method from the request's line
+    ** \param client's request
+    ** \return the method
+    **/
+    static std::string get_method(std::string& request);
+    
+    /**
+    ** \brief process the request and does the necessary checks
+    ** set the response's status code
+    ** \param the reponse
+    ** \return the string associated to the response
+    **/
+    virtual std::string process_request(Response& rp) = 0;
+   
   protected:
     std::string url_;
     std::string path_;

@@ -6,9 +6,10 @@
 #include <sys/stat.h>
 #include <sys/sendfile.h>
 #include <unistd.h>
-#include <signal.h>
+#include <csignal>
 #include <string.h>
 #include <tuple>
+
 #include "server_connection.hh"
 #include "request.hh"
 #include "response.hh"
@@ -25,12 +26,12 @@ constexpr int max_request_len = 2000;
 bool loop_handler = true;
 
 /**
-** main communication method
+** \brief communication method
 ** read the data
 ** check if the syntax is valid, otherwise send 400 error
 ** if valid, check for the method then call the process_request
-** that would do all the other checks and return the right
-** response
+** that would do all the other checks and send the response
+** \param the client's socket, the server's configuration and the log stream
 */
 void communicate(int fd, ServerConfig& config, std::ofstream& log)
 {
@@ -77,6 +78,14 @@ void communicate(int fd, ServerConfig& config, std::ofstream& log)
   } 
 }
 
+/**
+** \brief get the struct epoll_event of the file descriptor
+** and the server's associated to it
+** \param the list of ServerConnection and a list of the epoll_event structures
+** associated to it, the file descriptor returned by epoll
+** \return a pair of ServerConnection and struct epoll_event
+**/
+
 std::pair<ServerConnection, struct epoll_event> get_server_infos(std::vector<ServerConnection>& s, 
                       std::vector<struct epoll_event>& ev, int fd)
 {
@@ -94,12 +103,15 @@ std::pair<ServerConnection, struct epoll_event> get_server_infos(std::vector<Ser
   return res;
 }
 
-/* main server connection loop
-  ** accept tcp connection
-  ** create a thread each time there is data to read
-  ** the thread call the communication method that will process
-  ** the request
-  */
+/**
+** \brief main server connection loop
+** accept tcp connection
+** create a thread each time there is data to read
+** the thread call the communication method that will process
+** the request
+** \param list of ServerConnection objects and the stream of the log
+** \return 0 if ok, -1 othersize
+**/
 int main_loop(std::vector<ServerConnection>& list_c, std::ofstream& log)
 {
   for(auto it = list_c.begin(); it != list_c.end(); ++it)
@@ -215,28 +227,14 @@ int main(int argc, char* argv[])
     if(s.compare("--dry-run") == 0 && argc == 3)
     {
       Configuration conf(argv[2]);
-      try
-      {
-        conf.fill_configuration();
-        conf.print();
-        return 0;
-      }
-      catch(std::exception)
-      {
-        return 2;
-      }
-    }  
+      conf.fill_configuration();
+      conf.print();
+      return 0;
+    } 
     else
     {
       Configuration conf(argv[1]);
-      try
-      {
-        conf.fill_configuration();
-      }
-      catch(std::exception)
-      {
-        return 2;
-      }
+      conf.fill_configuration();
       try
       {
         std::vector<ServerConnection> list_connection;
@@ -261,7 +259,7 @@ int main(int argc, char* argv[])
           list_connection[i].set_socket(sock);
           i++;
         }
-        signal(SIGINT, &sig_handler);
+        std::signal(SIGINT, sig_handler);
         main_loop(list_connection, log);
         log.close();
       }
