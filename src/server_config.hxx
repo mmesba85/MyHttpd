@@ -373,15 +373,11 @@ void ServerConfig::update_cgi_env(Request& request) const
   setenv("SCRIPT_NAME", script_name.c_str(), 1);
   std::cout << "script_name" << script_name << '\n';
 
-  if (configurations_.find("ip") == configurations_.end())
-    std::cout << "NOT FOUND IP" << '\n';
-  std::string server_name = configurations_.at("ip");
+  std::string server_name = ip_;
   setenv("SERVER_NAME", server_name.c_str(), 1);
   std::cout << "server_name" << server_name << '\n';
 
-  if (configurations_.find("port") == configurations_.end())
-    std::cout << "NOT FOUND PORT" << '\n';
-  std::string server_port = configurations_.at("port");
+  std::string server_port = port_;
   setenv("SERVER_PORT", server_port.c_str(), 1);
   std::cout << "server_port" << server_port << '\n';
 
