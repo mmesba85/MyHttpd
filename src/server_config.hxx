@@ -372,6 +372,8 @@ void ServerConfig::update_cgi_env(Request& request) const
   script_filename.append(root_dir_);
   script_filename.append(script_name);
   setenv("SCRIPT_FILENAME", script_filename.c_str(), 1);
+
+  setenv("REDIRECT_STATUS", "1", 1);
 }
 
 std::string& ServerConfig::get_server_name()
