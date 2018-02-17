@@ -115,12 +115,11 @@ int Response::process_response(Request& rq, ServerConfig& config, int fd)
 {
   std::string response = rq.process_request(*this);
   bool cgi = config.is_cgi(rq);
-  std::cout << "cgi:" << cgi << std::endl;
   int file_fd;
   if (cgi)
     file_fd = config.process_cgi(rq, response);
   else
-     file_fd = get_file_dscr(config, rq.get_path().c_str());
+    file_fd = get_file_dscr(config, rq.get_path().c_str());
 
   if(file_fd == -1)
   {

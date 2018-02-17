@@ -42,22 +42,20 @@ GETRequest::GETRequest(std::string& request, std::string& ip,
         connected_ = true;
     }
   }
-  std::cout << first_line[1] << std::endl;
   std::string pattern("");
   // build the pattern
-  pattern.append(
- "/^(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?$/)");
-  //pattern.append("((/[a-zA-Z0-9-_=\\.#&]*)+)"); // the resource path.
-  //pattern.append("?([a-zA-Z0-9-_=\\./\\+#])*"); // the query
+  pattern.append("((/[a-zA-Z0-9-_=\\.#&]*)+)"); // the resource path.
   std::smatch result;
   std::regex regex(pattern);
-  if (std::regex_match(first_line[1], result, regex))
+  if (std::regex_search(first_line[1], result, regex))
   {
     path_.append(config.get_root_dir());
-    path_.append(result[1]);
+    const std::string& res = result[1];
+    if (path_.at(path_.size() - 1) == '/' && res.at(0) == '/')
+        path_.erase(path_.size() - 1);
+    path_.append(res);
     if (path_.at(path_.size() - 1) == '/')
       path_.append("index.html");
-    std::cout << path_ << std::endl;
   }
 }
 
