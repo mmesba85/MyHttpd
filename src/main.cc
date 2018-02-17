@@ -7,6 +7,7 @@
 #include <sys/sendfile.h>
 #include <unistd.h>
 #include <signal.h>
+#include <string.h>
 #include <tuple>
 #include "server_connection.hh"
 #include "request.hh"
@@ -47,8 +48,8 @@ void communicate(int fd, ServerConfig& config, std::ofstream& log)
     std::error_code ec(errno, std::generic_category());
     throw std::system_error(ec, "read data from descriptor failed."); 
   }
-
-  bool is_valid = check_request(buf);
+  std::string check(buf);
+  bool is_valid = check_request(check);
   //std::cout << "is valid : " << is_valid << std::endl;
   std::string response;
   if(!is_valid) //syntax error
@@ -66,7 +67,7 @@ void communicate(int fd, ServerConfig& config, std::ofstream& log)
       socklen_t addr_size = sizeof(struct sockaddr_in);
       getpeername(fd, (struct sockaddr *)&addr, &addr_size);
       std::string ip = inet_ntoa(addr.sin_addr);
-      GETRequest rq(buf, ip);
+      GETRequest rq(check, ip, config);
       log << "[" << config.get_server_name() << "] ";
       log << "GET " << rq.get_version() << " " << rq.get_url() << '\n';
       std::string version = rq.get_version();
@@ -99,7 +100,7 @@ std::pair<ServerConnection, struct epoll_event> get_server_infos(std::vector<Ser
   ** the thread call the communication method that will process
   ** the request
   */
-int main_loop(std::vector<ServerConnection> list_c, std::ofstream& log)
+int main_loop(std::vector<ServerConnection>& list_c, std::ofstream& log)
 {
   for(auto it = list_c.begin(); it != list_c.end(); ++it)
   {
@@ -118,6 +119,7 @@ int main_loop(std::vector<ServerConnection> list_c, std::ofstream& log)
   for(auto it = list_c.begin(); it != list_c.end(); ++it)
   {
     struct epoll_event event;
+    memset(&event, 0, sizeof(struct epoll_event));
     event.data.fd = (*it).get_socket();
     event.events = EPOLLIN | EPOLLET;
     if (epoll_ctl(epollfd, EPOLL_CTL_ADD, (*it).get_socket(), &event) == -1)

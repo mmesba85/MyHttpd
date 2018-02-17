@@ -74,7 +74,7 @@ ServerConfig& ServerConnection::get_config()
   return server_;
 }
 
-void ServerConnection::set_socket(int& socket)
+void ServerConnection::set_socket(int socket)
 {
   socket_ = socket;
 }

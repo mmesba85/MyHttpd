@@ -12,7 +12,7 @@ class ServerConnection
     ServerConfig& get_config();
     int get_socket() const;
     bool set_connection(struct epoll_event& event, int epoll_fd);
-    void set_socket(int& socket);
+    void set_socket(int socket);
   private:
     ServerConfig server_;
     int socket_;
