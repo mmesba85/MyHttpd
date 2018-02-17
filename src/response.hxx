@@ -38,8 +38,6 @@ std::string Response::build_response()
   std::stringstream ss;
   ss << version_ << " " << status_code_ << " " << reason_phrase_ << "\r\n";
   ss << "Date: " << get_date() << " GMT" << "\r\n";
-  //ss << "Content-Length: ";
-//  std::cout << "response: " << ss.str() << std::endl;
   return ss.str();
 }
 
@@ -117,6 +115,7 @@ int Response::process_response(Request& rq, ServerConfig& config, int fd)
 {
   std::string response = rq.process_request(*this);
   bool cgi = config.is_cgi(rq);
+  std::cout << "cgi:" << cgi << std::endl;
   int file_fd;
   if (cgi)
     file_fd = config.process_cgi(rq, response);
