@@ -8,6 +8,16 @@
 
 #include <regex>
 
+std::string& Request::get_type()
+{
+  return type_;
+}
+
+std::string& Request::get_path()
+{
+  return path_;
+}
+
 std::string& Request::get_client_ip()
 {
   return client_ip_;
@@ -37,42 +47,21 @@ bool Request::is_connected()
 /* a voir */
 bool Request::bad_method() const
 {
-    return false;
+  
+  return false;
 }
 
-std::string Request::extract_resource_path(const ServerConfig& config) const
+bool Request::forbidden() const
 {
-  std::string pattern("");
-  // build the pattern
-  pattern.append("((/[a-zA-Z0-9-_=\\.#&]*)+)"); // the resource path.
-  pattern.append("?([a-zA-Z0-9-_=\\./\\+#]&)*"); // the query
-
-  std::smatch result;
-  std::regex regex(pattern);
-  if (std::regex_match(url_, result, regex))
-  {
-    std::string path(config.get_root_dir());
-    path.append(result[1]);
-    if (path.at(path.size() - 1) == '/')
-      path.append("index.html");
-    return path;
-  }
-  return "";
-}
-
-bool Request::forbidden(const ServerConfig& config) const
-{
-  std::string path = extract_resource_path(config);
-  if(access(path.c_str(), R_OK) == 0)
+  if(access(path_.c_str(), R_OK) == 0)
     return false;
   return true;
 }
 
-bool Request::not_found(const ServerConfig& config) const
+bool Request::not_found() const
 {
-  std::string path = extract_resource_path(config);
   struct stat buf;
-  return !(stat(path.c_str(), &buf) == 0);
+  return !(stat(path_.c_str(), &buf) == 0);
 }
 
 std::string get_method(std::string request)
@@ -86,7 +75,7 @@ std::string get_method(std::string request)
     return res;
 }
 
-bool check_request_line(std::string line)
+bool check_request_line(std::string& line)
 {
     std::vector<std::string> strings;
     std::istringstream g(line);
@@ -101,7 +90,7 @@ bool check_request_line(std::string line)
 }
 
 /* check the request (syntax) */
-bool check_request(std::string request)
+bool check_request(std::string& request)
 {
     if(request.empty())
         return false;
@@ -161,12 +150,4 @@ bool check_request(std::string request)
     if(is_end == 0)
         return false;
     return true;
-}
-
-void Request::init(std::string&& url, std::string&& version, std::string&& host, bool connected)
-{
-    url_ = url;
-    version_ = version;
-    host_ = host;
-    connected_ = connected;
 }

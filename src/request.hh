@@ -15,34 +15,30 @@ class Request
     ** \param the server configuration where searching the resource
     ** \return true if forbidden, false otherwise
     */
-    bool forbidden(const ServerConfig& config) const;
+    bool forbidden() const;
     /**
     ** \brief check if resource requested exists
     ** \brief the server configuration to search the resource
     ** \return true if not founded, false otherwise
     */
-    bool not_found(const ServerConfig& config) const;
-
-    /**
-    ** \brief extract the string corresponding to the requested resource with no
-    ** parameters
-    ** \return the string correspondint to the resource
-    */
-    std::string extract_resource_path(const ServerConfig& config) const;
+    bool not_found() const;
 
     std::string& get_version();
     std::string& get_url();
     std::string& get_host();
+    std::string& get_type();
+    std::string& get_path();
     bool is_connected();
     static bool check_request_line(std::string& line);
-    static bool check_client_request(std::string request);
+    static bool check_client_request(std::string& request);
     static std::string get_method(std::string& request);
-    virtual std::string process_request(Response& rp, const ServerConfig& config) = 0;
+    virtual std::string process_request(Response& rp) = 0;
     std::string& get_client_ip();
-    //for  tests purposes
-    void init(std::string&& url, std::string&& version, std::string&& host, bool connected);
+
   protected:
     std::string url_;
+    std::string path_;
+    std::string type_;
     std::string version_;
     std::string host_;
     std::string client_ip_;
