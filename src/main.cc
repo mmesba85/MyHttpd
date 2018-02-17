@@ -7,7 +7,7 @@
 #include <sys/sendfile.h>
 #include <unistd.h>
 #include <signal.h>
-#include <mutex>
+#include <tuple>
 #include "server_connection.hh"
 #include "request.hh"
 #include "response.hh"
@@ -76,20 +76,21 @@ void communicate(int fd, ServerConfig& config, std::ofstream& log)
   } 
 }
 
-bool is_server_socket(std::vector<ServerConnection>& s, 
+std::pair<ServerConnection, struct epoll_event> get_server_infos(std::vector<ServerConnection>& s, 
                       std::vector<struct epoll_event>& ev, int fd)
 {
+  std::pair<ServerConnection, struct epoll_event> res;
   for(auto it = s.begin(); it != s.end(); ++it)
   {
     for(auto it_ = ev.begin(); it_ != ev.end(); ++it_)
     {
       if ((*it).get_socket() == fd)
       {
-        return true;
+        res = std::make_pair(*it, *it_);
       }
     }
   }
-  return false; 
+  return res;
 }
 
 /* main server connection loop
@@ -144,28 +145,16 @@ int main_loop(std::vector<ServerConnection> list_c, std::ofstream& log)
       {
         close(events[i].data.fd);
       }
-      else if(is_server_socket(list_c, ev, events[i].data.fd))
+      std::pair<ServerConnection, struct epoll_event> p = get_server_infos(list_c, ev, events[i].data.fd);
+      if(p.first.get_socket() == events[i].data.fd)
       {
-        for(auto it = list_c.begin(); it != list_c.end(); ++it)
-        {
-          for(auto it_ = ev.begin(); it_ != ev.end(); ++it_)
-          {
-            if ((*it).get_socket() == events[i].data.fd)
-            {
-              while((*it).set_connection(*it_, epollfd))
-              {
-              //  std::cout << "accept " << std::endl;
-                aux = (*it).get_config();
-              }
-            }
-          }
-        }
+        while(p.first.set_connection(p.second, epollfd))
+          aux = p.first.get_config();
       }
       else
       {
         auto dscr = events[i].data.fd;
         th.add_task(std::bind(communicate, dscr, std::ref(aux), std::ref(log)));
-        //communicate(dscr, aux, log);
       } 
     }
   }
