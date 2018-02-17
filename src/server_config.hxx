@@ -286,7 +286,6 @@ int ServerConfig::process_cgi(Request& request, std::string& rep_begin)
     update_cgi_env(request); // update environment
 
     // run the script
-    std::cout << request.get_path() << std::endl;
     FILE* file = popen(request.get_path().c_str(), "r");
     if (file == NULL)
         return 0;
@@ -320,7 +319,6 @@ void ServerConfig::fill_with_header(std::map<std::string, std::string>&
 {
     for (auto& it : headers)
     {
-        std::cout << it.first << " : " << it.second << std::endl;
         if (!it.first.compare("myhttpd_exceed") ||
                 !it.first.compare("myhttpd_eof"))
             continue;
@@ -352,56 +350,44 @@ void ServerConfig::update_cgi_env(Request& request) const
 
   std::string path_info = get_path_info(url);
   setenv("PATH_INFO", path_info.c_str(), 1);
-  std::cout << "path_info: " << path_info << std::endl;
   std::string path_translated(root_dir_);
   path_translated.append(path_info);
   setenv("PATH_TRANSLATED", path_translated.c_str(), 1);
-  std::cout << "path_translated: " << path_translated << std::endl;
 
   std::string query_string = get_query(url);
   setenv("QUERY_STRING", query_string.c_str(), 1);
-  std::cout << "querry_string: " << query_string << std::endl;
 
   std::string remote_addr = request.get_client_ip();
   setenv("REMOTE_ADDR", remote_addr.c_str(), 1);
-  std::cout << "remote_addr: " << remote_addr << std::endl;
 
   // std::string remote_host = request.get_host();
   setenv("REMOTE_HOST", "", 1);
-  // std::cout << "query_string" << query_string << '\n';
 
   std::string request_method = method(url);
   setenv("REQUEST_METHOD", request_method.c_str(), 1);
-  std::cout << "request_method: " << request_method << std::endl;
 
   std::string script_name = get_script(url);
   setenv("SCRIPT_NAME", script_name.c_str(), 1);
-  std::cout << "script_name: " << script_name << std::endl;
   // if (configurations_.find("ip") == configurations_.end())
   //   return -1;
   std::string server_name = ip_;
   setenv("SERVER_NAME", server_name.c_str(), 1);
-  std::cout << "server_name: " << server_name << std::endl;
 
   std::string server_port = port_;
   setenv("SERVER_PORT", server_port.c_str(), 1);
-  std::cout << "server_port: " << server_port << std::endl;
 
   std::string server_protocol = request.get_version();
   setenv("SERVER_PROTOCOL", server_protocol.c_str(), 1);
-  std::cout << "server_protocol: " << server_protocol << std::endl;
 
   std::string server_software = "My";
     server_software.append(server_protocol);
   setenv("SERVER_SOFTWARE", server_software.c_str(), 1);
-  std::cout << "server_software: " << server_software << std::endl;
 
   std::string script_filename = get_current_path();
   script_filename.append("/");
   script_filename.append(root_dir_);
   script_filename.append(script_name);
   setenv("SCRIPT_FILENAME", script_filename.c_str(), 1);
-  std::cout << "script_filename: " << script_filename << std::endl;
 
   setenv("REDIRECT_STATUS", "1", 1);
 }
