@@ -111,8 +111,14 @@ std::string method(std::string url)
 std::string get_script(std::string url)
 {
   std::istringstream g(url);
+  std::string tmp;
+  while(getline(g, tmp, ' '))
+    if(tmp.find('.') != std::string::npos)
+      break;
+
+  std::istringstream h(tmp);
   std::string script;
-  while(getline(g, script, '/'))
+  while(getline(h, script, /))
     if(script.find('.') != std::string::npos)
       break;
   return script;
