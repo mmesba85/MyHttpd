@@ -175,11 +175,10 @@ bool ServerConfig::is_cgi(Request& request) const
 
 ///////// CGI PART
 
-std::map<std::string, std::string>&& parse_cgi_headers(FILE* file)
+void ServerConfig::parse_cgi_headers(std::map<std::string, std::string>& map, FILE* file)
 {
-    std::map<std::string, std::string> map;
     if (!file)
-        return std::move(map);
+        return;
     constexpr int NB_BYTES = 100;
     char buffer[NB_BYTES + 1] = {'\0'};
     size_t cpt = 0;
@@ -251,7 +250,7 @@ std::map<std::string, std::string>&& parse_cgi_headers(FILE* file)
                                 break;
                             }
                         }
-                        return std::move(map);
+                        return;
                     }
                 }
             }
@@ -259,12 +258,12 @@ std::map<std::string, std::string>&& parse_cgi_headers(FILE* file)
             res = 0;
         }
     }
-    return std::move(map);
+    return;
 }
 
 int ServerConfig::process_cgi(Request& request, std::string& rep_begin)
 {
-    std::unique_lock<std::mutex> lock(pipe_lock);
+    //std::unique_lock<std::mutex> lock(pipe_lock);
     update_cgi_env(request); // update environment
 
     // run the script
@@ -274,13 +273,14 @@ int ServerConfig::process_cgi(Request& request, std::string& rep_begin)
 
     int fd = fileno(file);
     pipes[fd] = file;
-    lock.unlock();
+    //lock.unlock();
 
-    std::map<std::string, std::string> headers = parse_cgi_headers(file);
+    std::map<std::string, std::string> headers;
+    parse_cgi_headers(headers, file);
     if (!headers.size())
     {
         pclose(file);
-        lock.lock();
+        //lock.lock();
         pipes.erase(fd);
         return 0;
     }
@@ -312,10 +312,10 @@ void ServerConfig::fill_with_header(std::map<std::string, std::string>&
 
 void ServerConfig::cancel(int fd)
 {
-    std::unique_lock<std::mutex> lock(pipe_lock);
+    //std::unique_lock<std::mutex> lock(pipe_lock);
     FILE* file = pipes[fd];
     pipes.erase(fd);
-    lock.unlock();
+    //lock.unlock();
     pclose(file);
 }
 

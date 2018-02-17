@@ -24,7 +24,7 @@ private:
   std::string root_dir_;
   
   std::map<int, FILE*> pipes;
-  std::mutex pipe_lock;
+  //std::mutex pipe_lock;
 
   std::map<std::string, std::string> configurations_;
   std::map<std::string, std::string> error_;
@@ -38,7 +38,7 @@ private:
   ** \return a map containing all hears fields/values or an empty map if no
   ** header
   */
-  std::map<std::string, std::string>&& parse_cgi_headers(FILE* file) const;
+  void parse_cgi_headers(std::map<std::string, std::string>& map, FILE* file);
 
   /**
   ** \brief fill the string with the entity headers
