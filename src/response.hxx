@@ -124,10 +124,9 @@ int Response::process_response(const ServerConfig& config, int fd)
 
 int Response::process_response(Request& rq, const ServerConfig& config, int fd)
 {
-  std::string response = rq.process_request(*this, config);
-  std::string file_name = rq.extract_resource_path(config);
+  std::string response = rq.process_request(*this);
   int res = 0;
-  int file_fd = get_file_dscr(config, file_name.c_str());
+  int file_fd = get_file_dscr(config, rq.get_path().c_str());
   if(file_fd == 0)
   {
     response.append("0\r\n\r\n");
