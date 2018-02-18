@@ -1,14 +1,19 @@
-#include "response.hh" 
-#include "get_request.hh"
+#include <vector>
+#include <string>
+#include <sstream>
+#include <regex>
 
-GETRequest::GETRequest(std::string& request, std::string& ip, 
-  const ServerConfig& config)
+#include "response.hh"
+#include "get-request.hh"
+
+GETRequest::GETRequest(std::string& request, std::string& ip,
+  ServerConfig& config)
 {
   type_ = "GET";
   client_ip_ = ip;
   std::vector<std::string> first_line;
   std::istringstream f(request);
-  std::string s;    
+  std::string s;
   getline(f, s);
   s.erase(s.length()-1);
   url_ = s;

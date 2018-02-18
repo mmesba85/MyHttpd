@@ -4,15 +4,16 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/sendfile.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <time.h>
 #include <errno.h>
 #include <fcntl.h>
 
-#include "server_config.hh"
+#include "server-config.hh"
 #include "request.hh"
 #include "response.hh"
-
 
 Response::Response(const std::string& version)
 {
@@ -31,7 +32,7 @@ std::string get_date()
   strftime(buffer, 80, "%a, %d %b %Y %T", ptm);
   return buffer;
 }
-   
+
 std::string Response::build_response()
 {
   std::string res;
@@ -58,7 +59,7 @@ void Response::set_code(const std::string& code)
   else if(code.compare("400") == 0)
     reason_phrase_ = "Bad Request";
 }
-    
+
 void Response::set_version(const std::string& version)
 {
   version_ = version;
@@ -109,7 +110,7 @@ int Response::process_response(ServerConfig& config, int fd)
       std::error_code ec(errno, std::generic_category());
       throw std::system_error(ec, "Fail sendfile.");
     }
-    return 0; 
+    return 0;
   }
   return send_response(fd, file_fd, config, response, false);
 }
@@ -120,8 +121,8 @@ int Response::process_response(Request& rq, ServerConfig& config, int fd)
   bool cgi = config.is_cgi(rq);
   int file_fd;
 
-  /* tu pourrai deplacer le config.process_cgi pour recup le file_fd dans 
-  ** get file dscr, pck dans le cas ou il est not found il se pourrait 
+  /* tu pourrai deplacer le config.process_cgi pour recup le file_fd dans
+  ** get file dscr, pck dans le cas ou il est not found il se pourrait
   ** qu il y ait une page d erreur qu on doit affiché donc on peut pas separer les
   ** cas comme ça **/
 
@@ -140,7 +141,7 @@ int Response::process_response(Request& rq, ServerConfig& config, int fd)
       throw std::system_error(ec, "Fail sendfile.");
     }
 
-    return 0; 
+    return 0;
   }
   send_response(fd, file_fd, config, response, cgi);
   if(!rq.is_connected())
@@ -184,5 +185,5 @@ int Response::send_response(int fd, int file_fd, ServerConfig& config,
     close(file_fd);
   }else
       config.cancel(file_fd);
-  return 0; 
+  return 0;
 }
