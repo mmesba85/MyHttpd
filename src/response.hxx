@@ -73,8 +73,11 @@ int Response::get_file_dscr(const ServerConfig& config, const std::string& file_
 {
   std::map<std::string, std::string> map = config.get_error();
   int file_fd = -1;
+  /* il y a un file a envoyer */
   if(status_code_.compare("200") == 0 && file_name.compare("") != 0)
     file_fd = open(file_name.c_str(), O_RDONLY);
+
+  /* il y a une page associee a l erreur */
   else if(!map.empty())
   {
     std::map<std::string, std::string>::iterator it;
@@ -116,6 +119,12 @@ int Response::process_response(Request& rq, ServerConfig& config, int fd)
   std::string response = rq.process_request(*this);
   bool cgi = config.is_cgi(rq);
   int file_fd;
+
+  /* tu pourrai deplacer le config.process_cgi pour recup le file_fd dans 
+  ** get file dscr, pck dans le cas ou il est not found il se pourrait 
+  ** qu il y ait une page d erreur qu on doit affiché donc on peut pas separer les
+  ** cas comme ça **/
+
   if (cgi)
     file_fd = config.process_cgi(rq, response);
   else
