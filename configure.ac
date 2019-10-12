@@ -4,10 +4,14 @@
 AC_PREREQ([2.69])
 AC_INIT(myhttpd, 1.0, teamdechoc@gmail.com)
 AC_OUTPUT(Makefile)
-AC_CONFIG_SRCDIR([tests/test_parser.cc])
+AC_CONFIG_SRCDIR([src/main.cc])
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS([config.h])
-
+AC_CHECK_FUNCS([getcwd])
+AC_CHECK_FUNCS([inet_ntoa])
+AC_CHECK_FUNCS([memset])
+AC_CHECK_FUNCS([setenv]) 
+AC_TYPE_OFF_T
 # Checks for programs.
 AC_PROG_CXX
 
