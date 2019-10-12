@@ -1,9 +1,9 @@
 # MyHttpd
 Multi-threaded HTTP server.
 # Authors
-- Dominique Besson
-- Maroua Mesbahi
-- Melissa Li
+- Dominique Besson : Threadpool, CGI
+- Maroua Mesbahi : Request/Response Processing
+- Melissa Li : Server Configuration
 # Use
 - Compile :
 ```
