@@ -42,16 +42,15 @@ void communicate(int fd, ServerConfig& config, std::ofstream& log)
   if(res == 0)
     return;
 
-  //std::cout << "request: \n" << buf << std::endl;
-
   if (res == -1)
   {
     std::error_code ec(errno, std::generic_category());
     throw std::system_error(ec, "read data from descriptor failed."); 
   }
+
   std::string check(buf);
   bool is_valid = check_request(check);
-  //std::cout << "is valid : " << is_valid << std::endl;
+  
   std::string response;
   if(!is_valid) //syntax error
   {

@@ -7,7 +7,7 @@ class GETRequest : public Request
   public:
     
     /**
-    ** \brief GETReqiest constructor
+    ** \brief GETRequest constructor
     **/
     GETRequest(std::string& request, std::string& ip, 
       const ServerConfig& config);

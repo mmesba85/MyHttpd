@@ -106,10 +106,6 @@ bool check_request(std::string& request)
     if (!check_request_line(s))
         return false;
 
-    /* marque l'arrivee a la fin de la requete
-       si une autre ligne est lu apres cette fin
-       alors erreur
-       */
     auto is_end = 0;
     while(getline(f, s))
     {
@@ -132,20 +128,14 @@ bool check_request(std::string& request)
         if(is_end == 1)
             return false;
 
-        /* on decoupe la ligne en champs */
+        /* split the line into fields */
         while(getline(g, aux, ' '))
             strings.push_back(aux);
 
-        /* si l'argument du head connection est different
-           de close ou de keep-alive alors erreur
-           */
         if(strings[0].compare("Connection:") == 0 &&
                 strings[1].compare("close") != 0 &&
                 strings[1].compare("Keep-Alive") != 0)
-        {
-          std::cout << "laaa " << std::endl;
           return false;
-        }
     }
     if(is_end == 0)
         return false;
